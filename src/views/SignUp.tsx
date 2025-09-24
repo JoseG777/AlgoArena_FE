@@ -21,14 +21,37 @@ const SignUp: React.FC = ()=>
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) : void => {
         const { name, value } = e.target; // this will pull fields from the <input.../> part of the form, we can deconstruct and pull specific values
         setFormData((prev) => ({...prev, [name]: value}))
-        console.log(formData);
+        // console.log(formData);
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) : void => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) : Promise<void> => {
         e.preventDefault();
         if(formData.password !== formData.confirmedPassword)
         {
             console.log("Please ensure passwords match!");
+        }
+
+        try {
+            const res = await fetch("http://localhost:3001/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+            }),
+            });
+
+            if (!res.ok) {
+            const data = await res.json();
+            console.error("Error:", data.error);
+            return;
+            }
+
+            console.log("User created successfully");
+            setFormData({ username: "", email: "", password: "", confirmedPassword: "" });
+        } catch (err) {
+            console.error(err);
         }
     }
 
