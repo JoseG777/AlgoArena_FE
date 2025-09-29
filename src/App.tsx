@@ -3,6 +3,7 @@ import HomePage from './views/HomePage';
 import NotHomePage from './views/NotHomePage';
 import SignUp from './views/SignUp';
 import SignIn from './views/SignIn';
+import HostedJudge0Runner from './views/HostedJudge0Test';
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from './components/PublicOnlyRoute';
 import './App.css'
@@ -29,6 +30,8 @@ function App() {
             <SignIn/>
           </PublicOnlyRoute>
           }/>
+
+        <Route path="test-judge" element={<HostedJudge0Runner/>}/>
 
         {/* Protected Routes */}
         <Route
