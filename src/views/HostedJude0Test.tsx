@@ -102,7 +102,8 @@ const HostedJudge0Runner: React.FC = () => {
       const fullSource = `${source}\n\n${buildHarness(language)}`;
 
       const res = await fetch(
-        "https://ce.judge0.com/submissions?base64_encoded=true&wait=true",
+        //"https://ce.judge0.com/submissions?base64_encoded=true&wait=true" <- use this if you experience rate limiting
+        "http://localhost:3001/judge0/run",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
