@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Editor from "@monaco-editor/react";
 
 // Base64 helpers for Judge0 (handles unicode safely)
 function b64enc(s: string) {
@@ -141,69 +142,100 @@ const HostedJudge0Runner: React.FC = () => {
   }
 
   return (
-    <div>
-      <h3>Hosted Judge0 Runner with Tests</h3>
+   <div style={{
+  height: "100vh",
+  width: "100vw",
+  display: "flex",
+  flexDirection: "column",
+  padding: "20px",
+  gap: "20px",
+  boxSizing: "border-box",
+  backgroundColor: "#0e0e0e"
+}}>
+  {/* Header */}
+  <h1 style={{color:"rgba(184, 66, 31, 1)", margin:0}}>AlgoArena Editor</h1>
 
-      <label htmlFor="lang">Language</label>
-      <select
-        id="lang"
-        value={language}
-        onChange={(e) => onLangChange(e.target.value as Lang)}
-      >
-        <option value="typescript">TypeScript</option>
-        <option value="python">Python 3</option>
-      </select>
-
-      <br />
-
-      <label htmlFor="code">Source code</label>
-      <br />
-      <textarea
-        id="code"
+  {/* Main content: editor + output */}
+  <div style={{
+    display: "flex",
+    flex: 1,
+    gap: "20px",
+    minHeight: 0,
+    flexWrap: "nowrap", 
+  }}>
+    {/* Editor Card */}
+    <div style={{
+      flex: 2, 
+      minWidth: "400px", 
+      display: "flex",
+      flexDirection: "column",
+      backgroundColor: "#1b1b1b",
+      borderRadius: "8px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+      padding: "10px",
+      minHeight: 0
+    }}>
+      <div style={{marginBottom:"10px"}}>
+        <label style={{color:"#fff", marginRight:"5px"}}>Language:</label>
+        <select value={language} onChange={(e)=>onLangChange(e.target.value as Lang)} style={{padding:"4px", borderRadius:"4px"}}>
+          <option value="typescript">TypeScript</option>
+          <option value="python">Python</option>
+        </select>
+      </div>
+      <Editor
+        height="100%"
+        theme="vs-dark"
+        language={language}
         value={source}
-        onChange={(e) => setSource(e.target.value)}
-        style={{ width: "600px", height: "400px" }}
+        onChange={(val)=>val && setSource(val)}
+        options={{automaticLayout:true, fontSize:16, minimap:{enabled:false}}}
       />
-
-      <br />
-      <button onClick={run}>Run with Tests</button>
-
-      {errorMsg && (
-        <>
-          <h4>Error</h4>
-          <pre>{errorMsg}</pre>
-        </>
-      )}
-
-      {status && (
-        <>
-          <h4>Status</h4>
-          <pre>{status}</pre>
-        </>
-      )}
-
-      {stdout && (
-        <>
-          <h4>stdout</h4>
-          <pre>{stdout}</pre>
-        </>
-      )}
-
-      {stderr && (
-        <>
-          <h4>stderr</h4>
-          <pre>{stderr}</pre>
-        </>
-      )}
-
-      {compileOutput && (
-        <>
-          <h4>compile_output</h4>
-          <pre>{compileOutput}</pre>
-        </>
-      )}
     </div>
+
+    {/* Output Card */}
+    <div style={{
+      flex: 1, 
+      minWidth: "300px",
+      display: "flex",
+      flexDirection: "column",
+      backgroundColor: "#1b1b1b",
+      borderRadius: "8px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+      padding: "10px",
+      minHeight: 0
+    }}>
+      <button onClick={run} style={{
+        padding:"8px",
+        borderRadius:"6px",
+        backgroundColor:"rgba(127, 136, 136, 1)",
+        border:"none",
+        color:"#000",
+        fontWeight:"bold",
+        marginBottom:"10px",
+        cursor:"pointer"
+      }}>Run Code</button>
+      <div style={{
+        flex: 1,
+        backgroundColor:"#010101",
+        padding:"10px",
+        borderRadius:"6px",
+        color:"rgba(54, 139, 54, 1)",
+        fontFamily:"monospace",
+        overflowY:"auto",
+        whiteSpace:"pre-wrap",
+        minHeight:0
+      }}>
+        {errorMsg && <><strong>Error:</strong> {errorMsg}\n</>}
+        {status && <><strong>Status:</strong> {status}\n</>}
+        {stdout && <><strong>stdout:</strong>\n{stdout}\n</>}
+        {stderr && <><strong>stderr:</strong>\n{stderr}\n</>}
+      </div>
+    </div>
+  </div>
+</div>
+
+
   );
 };
-
 export default HostedJudge0Runner;
+ 
