@@ -89,7 +89,7 @@ const HostedJudge0Runner: React.FC = () => {
   const [status, setStatus] = useState<string>("");
   const [stdout, setStdout] = useState<string>("");
   const [stderr, setStderr] = useState<string>("");
-  const [compileOutput, setCompileOutput] = useState<string>("");
+  // const [compileOutput, setCompileOutput] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
   async function run() {
@@ -97,7 +97,7 @@ const HostedJudge0Runner: React.FC = () => {
     setStatus("");
     setStdout("");
     setStderr("");
-    setCompileOutput("");
+    // setCompileOutput("");
 
     try {
       const fullSource = `${source}\n\n${buildHarness(language)}`;
@@ -121,7 +121,9 @@ const HostedJudge0Runner: React.FC = () => {
       setStatus(data?.status?.description || "Unknown");
       setStdout(decode(data?.stdout));
       setStderr(decode(data?.stderr));
-      setCompileOutput(decode(data?.compile_output));
+      console.log(data);
+      console.log(decode(data?.stderr));
+      // setCompileOutput(decode(data?.compile_output));
 
       if (!res.ok) {
         setErrorMsg(data?.error || "Run failed");
@@ -137,7 +139,7 @@ const HostedJudge0Runner: React.FC = () => {
     setStatus("");
     setStdout("");
     setStderr("");
-    setCompileOutput("");
+    // setCompileOutput("");
     setErrorMsg("");
   }
 
@@ -225,10 +227,22 @@ const HostedJudge0Runner: React.FC = () => {
         whiteSpace:"pre-wrap",
         minHeight:0
       }}>
-        {errorMsg && <><strong>Error:</strong> {errorMsg}\n</>}
-        {status && <><strong>Status:</strong> {status}\n</>}
-        {stdout && <><strong>stdout:</strong>\n{stdout}\n</>}
-        {stderr && <><strong>stderr:</strong>\n{stderr}\n</>}
+        {errorMsg && <><strong>Error:</strong> {errorMsg} </>}
+        {status && <><strong>Status:</strong> {status} </>}
+        {stdout && 
+          <>
+            <br/>
+            <strong>stdout:</strong> 
+            <br/>
+            {stdout} 
+          </>}
+        {stderr && 
+          <>
+            <br/>
+            <strong>stderr:</strong> 
+            <br/>
+            {stderr} 
+          </>}
       </div>
     </div>
   </div>
