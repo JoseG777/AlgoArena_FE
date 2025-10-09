@@ -5,6 +5,7 @@ import SignUp from './views/SignUp';
 import SignIn from './views/SignIn';
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from './components/PublicOnlyRoute';
+import Rooms from './views/Rooms';
 import './App.css'
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           }
         />
 
+        <Route path="/room-test" element={<Rooms/>}/>
       </Routes>
     </BrowserRouter>
   )
