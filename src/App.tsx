@@ -6,6 +6,7 @@ import SignIn from './views/SignIn';
 import HostedJudge0Runner from './views/HostedJude0Test';
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from './components/PublicOnlyRoute';
+import Rooms from './views/Rooms';
 import './App.css'
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
         />
 
         <Route path="/test-judge" element={<HostedJudge0Runner/>}/>
+        <Route path="/room-test" element={<Rooms/>}/>
       </Routes>
     </BrowserRouter>
   )
