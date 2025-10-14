@@ -18,6 +18,8 @@ const AuthRoom: React.FC = () => {
 
   const [allowUsername, setAllowUsername] = useState<string>("");
 
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
   useEffect(() => {
     const onConnectError = (err: Error) => {
       console.error("Socket connect error:", err.message);
@@ -38,10 +40,33 @@ const AuthRoom: React.FC = () => {
     };
   }, []);
 
+    useEffect(() => {
+    const handleTimerUpdate = (payload: { timeLeft: number }) => {
+      setTimeLeft(payload.timeLeft);
+    };
+
+    const handleRoomClosed = () => {
+      alert("Room has been closed due to timer expiration.");
+      setJoinedRoom("");
+      setMessages([]);
+      setMembers([]);
+      setTimeLeft(null);
+    };
+
+    socket.on("timerUpdate", handleTimerUpdate);
+    socket.on("roomClosed", handleRoomClosed);
+
+    return () => {
+      socket.off("timerUpdate", handleTimerUpdate);
+      socket.off("roomClosed", handleRoomClosed);
+    };
+  }, []);
+
   const createRoom = () => {
     // reset view
     setMessages([]);
     setMembers([]);
+    setTimeLeft(null);
 
     const opts =
       allowUsername.trim().length > 0
@@ -60,6 +85,7 @@ const AuthRoom: React.FC = () => {
 
     setMessages([]);
     setMembers([]);
+    setTimeLeft(null);
 
     socket.emit(
       "joinRoom",
@@ -117,6 +143,8 @@ const AuthRoom: React.FC = () => {
       ) : (
         <>
           <h2>Room: {joinedRoom}</h2>
+
+          {timeLeft !== null && <h3>Time Left: {timeLeft} seconds</h3>}
 
           <h3>Members</h3>
           {members.length === 0 ? (
