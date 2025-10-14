@@ -13,6 +13,7 @@ const Rooms: React.FC = () => {
  const [joinedRoom, setJoinedRoom] = useState<string>("");
  const [messages, setMessages] = useState<string[]>([]);
  const [inputRoom, setInputRoom] = useState<string>("");
+ const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
 
  useEffect(() => {
@@ -29,6 +30,26 @@ const Rooms: React.FC = () => {
    };
  }, []);
 
+ useEffect(() => {
+  const handleTimerUpdate = (payload: { timeLeft: number }) => {
+    setTimeLeft(payload.timeLeft);
+  };
+
+  const handleRoomClosed = () => {
+    alert("Room has been closed due to timer expiration.");
+    setJoinedRoom("");
+    setMessages([]);
+    setTimeLeft(null);
+  };
+
+  socket.on("timerUpdate", handleTimerUpdate);
+  socket.on("roomClosed", handleRoomClosed);
+
+  return () => {
+    socket.off("timerUpdate", handleTimerUpdate);
+    socket.off("roomClosed", handleRoomClosed);
+  };
+}, []);
 
  // Create a room
  const createRoom = () => {
@@ -75,6 +96,9 @@ const Rooms: React.FC = () => {
      ) : (
        <>
          <h2>Room: {joinedRoom}</h2>
+         {timeLeft !== null && (
+          <h3>Time Left: {timeLeft} seconds</h3>
+         )}
          <ul>
            {messages.map((msg, idx) => (
              <li key={idx}>{msg}</li>
