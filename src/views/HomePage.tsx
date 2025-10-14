@@ -1,9 +1,8 @@
-import {Box, Button, Typography, Paper, Grid} from "@mui/material";
+import { Box, Button, Typography, Paper, Grid } from "@mui/material";
 import { Link } from "react-router-dom";
 import BoltIcon from "@mui/icons-material/Bolt";
 import CodeIcon from "@mui/icons-material/Code";
 import logo from "../assets/logo.png";
-
 
 const HomePage: React.FC = () =>
 {
@@ -83,7 +82,6 @@ const HomePage: React.FC = () =>
         {/* FEATURE CARDS */}
 
         <Grid container spacing={3} justifyContent="center" sx={{ mt: 4, maxWidth: 800}}>
-
             <Grid item xs={12} sm={6}>
                 <Paper
                 sx={{
@@ -102,8 +100,8 @@ const HomePage: React.FC = () =>
                     <Typography variant="body2" color="text.secondary">
                         Solve timed coding challenges, ranked by speed, correctness, and efficiency.
                     </Typography>
-                    </Paper> 
-                </Grid>
+                </Paper> 
+            </Grid>
 
             <Grid item xs={12} sm={6}>
                 <Paper
