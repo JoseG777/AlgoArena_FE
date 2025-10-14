@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import {Container, Box, TextField, Button, Typography, Paper, Link} from "@mui/material";
+import {Box, TextField, Button, Typography, Paper, Link} from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 
@@ -99,6 +99,7 @@ const SignIn: React.FC = () => {
           boxShadow: "0 0 20px rgba(76, 201, 240, 0.4)",
           backdropFilter: "blur(8px)",
           textAlign: "center",
+          transform: "translateY(-90px)",
     }}
     >
     <Box
