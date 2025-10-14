@@ -5,8 +5,6 @@ import {Box, TextField, Button, Typography, Paper, Link} from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 
-
-
 interface LoginFormData {
   identifyingInput: string;
   password: string;
