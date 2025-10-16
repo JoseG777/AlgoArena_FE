@@ -5,6 +5,8 @@ import SignUp from './views/SignUp';
 import SignIn from './views/SignIn';
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from './components/PublicOnlyRoute';
+import AuthRoom from './views/AuthRoom';
+import Rooms from './views/Rooms';
 import './App.css'
 
 function App() {
@@ -35,11 +37,21 @@ function App() {
           path="/test"
           element={
             <ProtectedRoute>
-              <NotHomePage />
+              <NotHomePage/>
             </ProtectedRoute>
           }
         />
 
+        <Route
+          path="auth-room"
+          element={
+            <ProtectedRoute>
+              <AuthRoom/>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/room-test" element={<Rooms/>}/>
       </Routes>
     </BrowserRouter>
   )
