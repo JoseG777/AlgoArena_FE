@@ -9,8 +9,13 @@ import {
 } from "@mui/material";
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
+import AlgorithmVortex from "../components/AlgorithmVortex";
+import { useNavigate } from "react-router-dom";
+
 
 const Dashboard: React.FC = () => {
+    const navigate = useNavigate();
+
   return (
     <Box
       sx={{
@@ -18,11 +23,15 @@ const Dashboard: React.FC = () => {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#0f0f3c", // Dark navy blue from your code
+        position: "fixed",
+            top: 0,
+            left: 0,
+        backgroundColor: "#0f0f3c", 
         color: "white",
         overflow: "hidden",
       }}
     >
+          <AlgorithmVortex />
       {/* Header */}
       <AppBar
         position="static"
@@ -30,33 +39,31 @@ const Dashboard: React.FC = () => {
         sx={{ backgroundColor: "transparent", padding: "0.5rem 2rem" }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
+         
+         
           {/* Logo and Title */}
+
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box
               component="img"
-              src="/logo.png" // Assumes logo.png is in your `public` folder
+              src="/logo.png" 
               alt="Algo Arena Logo"
               sx={{ 
-                width: { xs: 40, sm: 50 },
+                width: { xs: 350, sm: 250 },
                 filter: "drop-shadow(0px 0px 8px rgba(0, 150, 255, 0.6))",
               }}
             />
             <Box>
-              <Typography variant="h6" fontWeight="bold" letterSpacing={1}>
-                ALGO ARENA
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#9ca3af" }}>
-                BATTLE WITH BRAINS
-              </Typography>
+              
             </Box>
           </Box>
 
           {/* Navigation Links */}
           <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
-            <Button color="inherit" sx={{ fontWeight: "bold" }}>HOME</Button>
-            <Button color="inherit" sx={{ fontWeight: "bold" }}>STATS</Button>
-            <Button color="inherit" sx={{ fontWeight: "bold" }}>FRIENDS</Button>
-            <Button color="inherit" sx={{ fontWeight: "bold" }}>LOGOUT</Button>
+            <Button sx={{ fontWeight: "bold", fontSize: "1.2rem" }} onClick={() => navigate("/home")}>HOME</Button>
+            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>STATS</Button>
+            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>FRIENDS</Button>
+            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>LOGOUT</Button>
           </Box>
         </Toolbar>
       </AppBar>
@@ -79,9 +86,9 @@ const Dashboard: React.FC = () => {
             <Button
               variant="contained"
               sx={{
-                width: { xs: 240, sm: 300 },
-                height: { xs: 180, sm: 220 },
-                backgroundColor: "#1e293b", // Dark slate/navy for the cards
+                width: { xs: 480, sm: 480 },
+                height: { xs: 450, sm: 350 },
+                backgroundColor: "#1e293b", 
                 fontWeight: "bold",
                 fontSize: { xs: "1.1rem", sm: "1.3rem" },
                 display: "flex",
@@ -103,9 +110,9 @@ const Dashboard: React.FC = () => {
             <Button
               variant="contained"
               sx={{
-                width: { xs: 240, sm: 300 },
-                height: { xs: 180, sm: 220 },
-                backgroundColor: "#1e293b", // Dark slate/navy for the cards
+                width: { xs: 480, sm: 480 },
+                height: { xs: 450, sm: 350 },
+                backgroundColor: "#1e293b", 
                 fontWeight: "bold",
                 fontSize: { xs: "1.1rem", sm: "1.3rem" },
                 display: "flex",
@@ -129,7 +136,7 @@ const Dashboard: React.FC = () => {
         <Button
           variant="contained"
           sx={{
-            backgroundColor: "#7c3aed", // Vibrant purple from your screenshot
+            backgroundColor: "#7c3aed", 
             "&:hover": { backgroundColor: "#6d28d9" },
             width: { xs: "80%", sm: "auto" },
             px: 12,

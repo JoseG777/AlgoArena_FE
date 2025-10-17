@@ -16,6 +16,11 @@ function App() {
     <BrowserRouter>
       <Routes>
 
+      {/* Redirect root to /home */}
+          <Route path="/home" element={<NotHomePage />} />
+
+
+
         {/* Public Routes */}
          <Route
           path="/"
