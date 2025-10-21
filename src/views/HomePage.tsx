@@ -1,4 +1,4 @@
-import { Box, Button, Typography, Paper, Grid } from "@mui/material";
+import { Box, Button, Typography, Paper, Grid  } from "@mui/material";
 import { Link } from "react-router-dom";
 import BoltIcon from "@mui/icons-material/Bolt";
 import CodeIcon from "@mui/icons-material/Code";
@@ -41,7 +41,7 @@ const HomePage: React.FC = () =>
         {/*Heading*/}
         <Typography 
         variant="h4"
-        sx={{ fontWeight: "bold", color: "#4CC9F0", textAlign: "center", mb: 1 }}
+        sx={{ fontWeight: "bold", color: "#4CC9F0", textAlign: "center", mb: 1, mt:-5.5, }}
         >
             COMPETE. CODE. CONQUER.
         </Typography>
@@ -81,23 +81,34 @@ const HomePage: React.FC = () =>
         </Box>
         {/* FEATURE CARDS */}
 
-        <Grid container spacing={3} justifyContent="center" sx={{ mt: 4, maxWidth: 800}}>
+        <Grid container spacing={3} justifyContent="center" alignItems="stretch" sx={{ width: "90%", maxWidth: 900, mt:4, mb:7,}}>
             <Grid item xs={12} sm={6}>
                 <Paper
                 sx={{
-                    backgroundColor: "rgba(0,0,0,0.6)",
-                    border: "1px solid rgba(76, 201, 240, 0.4)",
-                    borderRadius: 3,
-                    p: 3,
-                    textAlign: "center",
-                    boxShadow: "0 0 15px rgba(76, 201, 240, 0.3)",
-                  }}
+                  height: "100%", 
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                  border: "1px solid rgba(76, 201, 240, 0.4)",
+                  borderRadius: 3,
+                  p: 4,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  textAlign: "center",
+                  boxShadow: "0 0 20px rgba(76, 201, 240, 0.3)",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 0 30px rgba(76, 201, 240, 0.5)",
+                  },
+                }}
                 >
-                    <CodeIcon sx={{ fontSize: 40, color: "#4CC9F0", mb:1}} />
-                    <Typography variant="h6" fontWeight="bold">
+                    <CodeIcon sx={{ fontSize: 50, color: "#4CC9F0", mb:2 }} />
+                    <Typography variant="h6" sx={{ fontWeight: "bold", color: "#fff"}}>
                         CODING BATTLES
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx= {{ color:"#D1D1D1" , mt: 1, lineHeight: 1.5}}
+                    >
                         Solve timed coding challenges, ranked by speed, correctness, and efficiency.
                     </Typography>
                 </Paper> 
@@ -106,19 +117,30 @@ const HomePage: React.FC = () =>
             <Grid item xs={12} sm={6}>
                 <Paper
                 sx={{
-                    backgroundColor: "rgba(0,0,0,0.6)",
-                    border: "1px solid rgba(76, 201, 240, 0.4)",
-                    borderRadius: 3,
-                    p: 3,
-                    textAlign: "center",
-                    boxShadow: "0 0 15px rgba(76, 201, 240, 0.3)",
-                  }}
+                  height: "100%",
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                  border: "1px solid rgba(76, 201, 240, 0.4)",
+                  borderRadius: 3,
+                  p: 4,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  textAlign: "center",
+                  boxShadow: "0 0 20px rgba(76, 201, 240, 0.3)",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 0 30px rgba(76, 201, 240, 0.5)",
+                  },
+                }}
                   >
-                    <BoltIcon sx={{fontSize: 40, color: "#4CC9F0", mb: 1 }} />
-                    <Typography variant="h6" fontWeight="bold">
+                    <BoltIcon sx={{fontSize: 50, color: "#4CC9F0", mb: 2 }} />
+                    <Typography variant="h6" sx={{ fontWeight:"bold", color: "#fff" }}>
                         TRIVIA ARENA
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx={{ color:"#D1D1D1", mt:1, lineHeight: 1.5 }} 
+                    >
                         Test your CS knowledge in real-time trivia battles.
                     </Typography>
                   </Paper>
