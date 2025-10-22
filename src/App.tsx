@@ -3,6 +3,7 @@ import HomePage from './views/HomePage';
 import NotHomePage from './views/NotHomePage';
 import SignUp from './views/SignUp';
 import SignIn from './views/SignIn';
+import HostedJudge0Runner from './views/HostedJude0Test';
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from './components/PublicOnlyRoute';
 import AuthRoom from './views/AuthRoom';
@@ -65,6 +66,7 @@ function App() {
           }
         />
 
+        <Route path="/test-judge" element={<HostedJudge0Runner/>}/>
         <Route path="/room-test"
          element={<Rooms/>}/>
       </Routes>
