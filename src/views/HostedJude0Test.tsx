@@ -5,13 +5,10 @@ import Editor from "@monaco-editor/react";
 function b64enc(s: string) {
   return btoa(unescape(encodeURIComponent(s)));
 }
-function b64dec(s: string) {
-  return decodeURIComponent(escape(atob(s)));
-}
 
 const LANGUAGE_IDS = {
-  typescript: 74, // TypeScript (Judge0)
-  python: 71,     // Python 3
+  typescript: 74,
+  python: 71,
 } as const;
 
 type Lang = keyof typeof LANGUAGE_IDS;
@@ -83,21 +80,40 @@ runTests();
 `;
 }
 
+type BackendGraded = {
+  status: string;
+  time: string | null;
+  memory: number | null;
+  stdout: string;
+  stderr: string;
+  compile_output: string;
+  score: number;
+  breakdown: Record<string, number | string>;
+};
+
 const HostedJudge0Runner: React.FC = () => {
   const [language, setLanguage] = useState<Lang>("typescript");
   const [source, setSource] = useState<string>(DEFAULT_SNIPPET["typescript"]);
+
   const [status, setStatus] = useState<string>("");
   const [stdout, setStdout] = useState<string>("");
   const [stderr, setStderr] = useState<string>("");
-  // const [compileOutput, setCompileOutput] = useState<string>("");
+  const [compileOutput, setCompileOutput] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
+
+  const [score, setScore] = useState<number | null>(null);
+  const [passes, setPasses] = useState<number | null>(null);
+  const [fails, setFails] = useState<number | null>(null);
 
   async function run() {
     setErrorMsg("");
     setStatus("");
     setStdout("");
     setStderr("");
-    // setCompileOutput("");
+    setCompileOutput("");
+    setScore(null);
+    setPasses(null);
+    setFails(null);
 
     try {
       const fullSource = `${source}\n\n${buildHarness(language)}`;
@@ -115,22 +131,31 @@ const HostedJudge0Runner: React.FC = () => {
         }
       );
 
-      const data = await res.json();
-      const decode = (v?: string | null) => (v ? b64dec(v) : "");
-
-      setStatus(data?.status?.description || "Unknown");
-      setStdout(decode(data?.stdout));
-      setStderr(decode(data?.stderr));
-      console.log(data);
-      console.log(decode(data?.stderr));
-      // setCompileOutput(decode(data?.compile_output));
+      const data: BackendGraded | { error: string } = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data?.error || "Run failed");
+        setErrorMsg((data as any)?.error || "Run failed");
+        return;
       }
-    } catch (e: any) {
-      setErrorMsg(e?.message || "Network error");
-    }
+
+      const d = data as BackendGraded;
+
+      setStatus(d.status || "Unknown");
+      setStdout(d.stdout || "");
+      setStderr(d.stderr || "");
+      setCompileOutput(d.compile_output || "");
+      setScore(typeof d.score === "number" ? d.score : null);
+
+      const b = d.breakdown || {};
+      const ps = typeof b["passes"] === "number" ? (b["passes"] as number) : null;
+      const fs = typeof b["fails"] === "number" ? (b["fails"] as number) : null;
+      setPasses(ps);
+      setFails(fs);
+
+    
+      } catch (e: any) {
+        setErrorMsg(e?.message || "Network error");
+      }
   }
 
   function onLangChange(next: Lang) {
@@ -139,117 +164,202 @@ const HostedJudge0Runner: React.FC = () => {
     setStatus("");
     setStdout("");
     setStderr("");
-    // setCompileOutput("");
+    setCompileOutput("");
     setErrorMsg("");
+    setScore(null);
+    setPasses(null);
+    setFails(null);
   }
 
+  const isCompileError = /Compilation Error/i.test(status);
+
   return (
-   <div style={{
-  height: "100vh",
-  width: "100vw",
-  display: "flex",
-  flexDirection: "column",
-  padding: "20px",
-  gap: "20px",
-  boxSizing: "border-box",
-  backgroundColor: "#0e0e0e"
-}}>
-  {/* Header */}
-  <h1 style={{color:"rgba(184, 66, 31, 1)", margin:0}}>AlgoArena Editor</h1>
+    <div
+      style={{
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        flexDirection: "column",
+        padding: "20px",
+        gap: "20px",
+        boxSizing: "border-box",
+        backgroundColor: "#0e0e0e",
+      }}
+    >
+      <h1 style={{ color: "rgba(184, 66, 31, 1)", margin: 0 }}>AlgoArena Editor</h1>
 
-  {/* Main content: editor + output */}
-  <div style={{
-    display: "flex",
-    flex: 1,
-    gap: "20px",
-    minHeight: 0,
-    flexWrap: "nowrap", 
-  }}>
-    {/* Editor Card */}
-    <div style={{
-      flex: 2, 
-      minWidth: "400px", 
-      display: "flex",
-      flexDirection: "column",
-      backgroundColor: "#1b1b1b",
-      borderRadius: "8px",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-      padding: "10px",
-      minHeight: 0
-    }}>
-      <div style={{marginBottom:"10px"}}>
-        <label style={{color:"#fff", marginRight:"5px"}}>Language:</label>
-        <select value={language} onChange={(e)=>onLangChange(e.target.value as Lang)} style={{padding:"4px", borderRadius:"4px"}}>
-          <option value="typescript">TypeScript</option>
-          <option value="python">Python</option>
-        </select>
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          gap: "20px",
+          minHeight: 0,
+          flexWrap: "nowrap",
+        }}
+      >
+        {/* Editor Card */}
+        <div
+          style={{
+            flex: 2,
+            minWidth: "400px",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#1b1b1b",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+            padding: "10px",
+            minHeight: 0,
+          }}
+        >
+          <div style={{ marginBottom: "10px" }}>
+            <label style={{ color: "#fff", marginRight: "5px" }}>Language:</label>
+            <select
+              value={language}
+              onChange={(e) => onLangChange(e.target.value as Lang)}
+              style={{ padding: "4px", borderRadius: "4px" }}
+            >
+              <option value="typescript">TypeScript</option>
+              <option value="python">Python</option>
+            </select>
+          </div>
+          <Editor
+            height="100%"
+            theme="vs-dark"
+            language={language}
+            value={source}
+            onChange={(val) => val && setSource(val)}
+            options={{ automaticLayout: true, fontSize: 16, minimap: { enabled: false } }}
+          />
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            minWidth: "300px",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#1b1b1b",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+            padding: "10px",
+            minHeight: 0,
+          }}
+        >
+          <button
+            onClick={run}
+            style={{
+              padding: "8px",
+              borderRadius: "6px",
+              backgroundColor: "rgba(127, 136, 136, 1)",
+              border: "none",
+              color: "#000",
+              fontWeight: "bold",
+              marginBottom: "10px",
+              cursor: "pointer",
+            }}
+          >
+            Run Code
+          </button>
+
+          <div
+            style={{
+              marginBottom: "10px",
+              backgroundColor: "#121212",
+              borderRadius: "6px",
+              padding: "10px",
+              color: "#fff",
+              fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+              lineHeight: 1.4,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <strong>Score:</strong>
+              <span
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "1.2rem",
+                  color:
+                    (score ?? 0) >= 70
+                      ? "rgb(54, 139, 54)"
+                      : (score ?? 0) >= 0
+                      ? "rgb(200, 200, 60)"
+                      : "rgb(200, 70, 70)",
+                }}
+              >
+                {score ?? "—"}
+              </span>
+            </div>
+
+            <div style={{ marginTop: "6px", fontSize: "0.95rem" }}>
+              <span style={{ color: isCompileError ? "rgb(200,70,70)" : "#bbb" }}>
+                {isCompileError ? "Compilation Error" : "No compilation error"}
+              </span>
+              {(passes !== null || fails !== null) && (
+                <>
+                  <br/>
+                  <span style={{ color: "#555" }}> · </span>
+                  <span style={{ color: "#bbb" }}>
+                    Cases: {passes ?? 0} passed | {fails ?? 0} failed
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              backgroundColor: "#010101",
+              padding: "10px",
+              borderRadius: "6px",
+              color: "rgba(54, 139, 54, 1)",
+              fontFamily: "monospace",
+              overflowY: "auto",
+              whiteSpace: "pre-wrap",
+              minHeight: 0,
+            }}
+          >
+            {errorMsg && (
+              <>
+                <strong>Error:</strong> {errorMsg}
+                <br />
+              </>
+            )}
+            {status && (
+              <>
+                <strong>Status:</strong> {status}
+              </>
+            )}
+            {stdout && (
+              <>
+                <br />
+                <strong>stdout:</strong>
+                <br />
+                {stdout}
+              </>
+            )}
+            {stderr && (
+              <>
+                <br />
+                <strong>stderr:</strong>
+                <br />
+                {stderr}
+              </>
+            )}
+            {compileOutput && (
+              <>
+                <br />
+                <strong>compile_output:</strong>
+                <br />
+                {compileOutput}
+              </>
+            )}
+          </div>
+        </div>
       </div>
-      <Editor
-        height="100%"
-        theme="vs-dark"
-        language={language}
-        value={source}
-        onChange={(val)=>val && setSource(val)}
-        options={{automaticLayout:true, fontSize:16, minimap:{enabled:false}}}
-      />
     </div>
-
-    {/* Output Card */}
-    <div style={{
-      flex: 1, 
-      minWidth: "300px",
-      display: "flex",
-      flexDirection: "column",
-      backgroundColor: "#1b1b1b",
-      borderRadius: "8px",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-      padding: "10px",
-      minHeight: 0
-    }}>
-      <button onClick={run} style={{
-        padding:"8px",
-        borderRadius:"6px",
-        backgroundColor:"rgba(127, 136, 136, 1)",
-        border:"none",
-        color:"#000",
-        fontWeight:"bold",
-        marginBottom:"10px",
-        cursor:"pointer"
-      }}>Run Code</button>
-      <div style={{
-        flex: 1,
-        backgroundColor:"#010101",
-        padding:"10px",
-        borderRadius:"6px",
-        color:"rgba(54, 139, 54, 1)",
-        fontFamily:"monospace",
-        overflowY:"auto",
-        whiteSpace:"pre-wrap",
-        minHeight:0
-      }}>
-        {errorMsg && <><strong>Error:</strong> {errorMsg} </>}
-        {status && <><strong>Status:</strong> {status} </>}
-        {stdout && 
-          <>
-            <br/>
-            <strong>stdout:</strong> 
-            <br/>
-            {stdout} 
-          </>}
-        {stderr && 
-          <>
-            <br/>
-            <strong>stderr:</strong> 
-            <br/>
-            {stderr} 
-          </>}
-      </div>
-    </div>
-  </div>
-</div>
-
-
   );
 };
+
 export default HostedJudge0Runner;
  
