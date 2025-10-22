@@ -8,40 +8,54 @@ import PublicOnlyRoute from './components/PublicOnlyRoute';
 import AuthRoom from './views/AuthRoom';
 import Rooms from './views/Rooms';
 import './App.css'
+import Dashboard from './views/Dashboard';
+
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+      {/* Redirect root to /home */}
+          <Route path="/home" element={<NotHomePage />} />
+
+
+
         {/* Public Routes */}
-        <Route path="/" element={
-          <PublicOnlyRoute to="/test">
-            <HomePage/>
-          </PublicOnlyRoute>
-          }/>
-
-        <Route path="sign-up" element={
-          <PublicOnlyRoute to="/test">
-            <SignUp/>
-          </PublicOnlyRoute>
-          }/>
-
-        <Route path="sign-in" element={
-          <PublicOnlyRoute to="/test">
-            <SignIn/>
-          </PublicOnlyRoute>
-          }/>
-
-        {/* Protected Routes */}
-        <Route
-          path="/test"
+         <Route
+          path="/"
           element={
-            <ProtectedRoute>
-              <NotHomePage/>
-            </ProtectedRoute>
+            <PublicOnlyRoute to="/dash-board">
+              <HomePage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <PublicOnlyRoute to="/dash-board">
+              <SignUp />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/sign-in"
+          element={
+            <PublicOnlyRoute to="/dash-board">
+              <SignIn />
+            </PublicOnlyRoute>
           }
         />
 
+        {/* Protected Routes */}
+        <Route
+          path="/dash-board"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="auth-room"
           element={
@@ -51,8 +65,11 @@ function App() {
           }
         />
 
-        <Route path="/room-test" element={<Rooms/>}/>
+        <Route path="/room-test"
+         element={<Rooms/>}/>
       </Routes>
+
+      
     </BrowserRouter>
   )
 }

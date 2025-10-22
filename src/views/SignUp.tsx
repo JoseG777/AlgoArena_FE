@@ -4,6 +4,7 @@ import PersonOutline from '@mui/icons-material/PersonOutline';
 import MailOutline from '@mui/icons-material/MailOutline';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import logo from "../assets/algo.png";
+import AlgorithmVortex from "../components/AlgorithmVortex";
 
 
 
@@ -127,6 +128,7 @@ const SignUp: React.FC = ()=>
                 p: 2,
             }}
         >
+              <AlgorithmVortex />
             <Container maxWidth="md">
                 {/* Logo */}
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt:1, mb: 3 }}>

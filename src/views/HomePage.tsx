@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import BoltIcon from "@mui/icons-material/Bolt";
 import CodeIcon from "@mui/icons-material/Code";
 import logo from "../assets/logo.png";
+import AlgorithmVortex from "../components/AlgorithmVortex";
 
 const HomePage: React.FC = () =>
 {
@@ -25,6 +26,7 @@ const HomePage: React.FC = () =>
         padding: 2,
        }}
        >
+        <AlgorithmVortex/>
         {/*LOGO */}
         <Box sx={{ textAlign: "center", mb:3 }}>
             <Box 

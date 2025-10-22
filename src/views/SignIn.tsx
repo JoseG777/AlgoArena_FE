@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import {Box, TextField, Button, Typography, Paper, Link} from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
+import AlgorithmVortex from "../components/AlgorithmVortex";
 
 interface LoginFormData {
   identifyingInput: string;
@@ -72,6 +73,8 @@ const SignIn: React.FC = () => {
       alignItems: "center",
     }}
   >
+    
+    <AlgorithmVortex />
     {/* LOGO */}
     <Box sx={{ textAlign:"center", mb:3 }}>
       <Box
