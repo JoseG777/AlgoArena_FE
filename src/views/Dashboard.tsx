@@ -2,7 +2,6 @@ import React from "react";
 import {
   Box,
   Button,
-  Typography,
   Grid,
   AppBar,
   Toolbar,
@@ -60,7 +59,7 @@ const Dashboard: React.FC = () => {
 
           {/* Navigation Links */}
           <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
-            <Button sx={{ fontWeight: "bold", fontSize: "1.2rem" }} onClick={() => navigate("/home")}>HOME</Button>
+            <Button sx={{ fontWeight: "bold", fontSize: "1.2rem" }} onClick={() => navigate("/dash-board")}>HOME</Button>
             <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>STATS</Button>
             <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>FRIENDS</Button>
             <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>LOGOUT</Button>

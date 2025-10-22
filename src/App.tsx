@@ -25,7 +25,7 @@ function App() {
          <Route
           path="/"
           element={
-            <PublicOnlyRoute to="/dashboard">
+            <PublicOnlyRoute to="/dash-board">
               <HomePage />
             </PublicOnlyRoute>
           }
@@ -33,7 +33,7 @@ function App() {
         <Route
           path="/sign-up"
           element={
-            <PublicOnlyRoute to="/dashboard">
+            <PublicOnlyRoute to="/dash-board">
               <SignUp />
             </PublicOnlyRoute>
           }
@@ -41,7 +41,7 @@ function App() {
         <Route
           path="/sign-in"
           element={
-            <PublicOnlyRoute to="/dashboard">
+            <PublicOnlyRoute to="/dash-board">
               <SignIn />
             </PublicOnlyRoute>
           }
@@ -49,7 +49,7 @@ function App() {
 
         {/* Protected Routes */}
         <Route
-          path="/dashboard"
+          path="/dash-board"
           element={
             <ProtectedRoute>
               <Dashboard />

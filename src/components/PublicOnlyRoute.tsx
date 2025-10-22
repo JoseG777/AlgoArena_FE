@@ -7,7 +7,7 @@ type Props = {
   to?: string;
 };
 
-const PublicOnlyRoute: React.FC<Props> = ({ children, to = "/test" }) => {
+const PublicOnlyRoute: React.FC<Props> = ({ children, to = "/dash-board" }) => {
   const { user, loading } = useAuth();
 
   if (loading) return <p>Loading…</p>;
