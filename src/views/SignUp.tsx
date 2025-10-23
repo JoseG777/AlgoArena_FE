@@ -49,6 +49,7 @@ const SignUp: React.FC = () => {
     }
     setError("");
     setSuccess("");
+    setIsLoading(true);
 
     try {
       const res = await fetch("http://localhost:3001/register", {
@@ -69,6 +70,8 @@ const SignUp: React.FC = () => {
       setFormData({ username: "", email: "", password: "", confirmedPassword: "" });
     } catch (err) {
       console.error(err);
+    } finally {
+        setIsLoading(false);
     }
   };
   // Custom styles for the text fields to achieve the desired look
