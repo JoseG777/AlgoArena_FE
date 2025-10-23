@@ -1,8 +1,7 @@
 import React, { useCallback } from "react";
-import Particles from "react-tsparticles"; 
+import Particles from "react-tsparticles";
 import type { Engine } from "tsparticles-engine";
 import { loadSlim } from "tsparticles-slim";
-
 
 const AlgorithmVortex: React.FC = () => {
   const particlesInit = useCallback(async (engine: Engine) => {
@@ -33,11 +32,19 @@ const AlgorithmVortex: React.FC = () => {
       },
       opacity: { value: 0.8 },
       size: { value: { min: 8, max: 16 } },
-      move: { enable: true, speed: 1.6, random: true, attract: { enable: true, rotate: { x: 6000, y: 1200 } } },
+      move: {
+        enable: true,
+        speed: 1.6,
+        random: true,
+        attract: { enable: true, rotate: { x: 6000, y: 1200 } },
+      },
       rotate: { value: { min: 0, max: 360 }, animation: { enable: true, speed: 4 } },
     },
     interactivity: {
-      events: { onHover: { enable: true, mode: "attract" }, onClick: { enable: true, mode: "push" } },
+      events: {
+        onHover: { enable: true, mode: "attract" },
+        onClick: { enable: true, mode: "push" },
+      },
       modes: { attract: { distance: 150, duration: 0.4 }, push: { quantity: 4 } },
     },
     detectRetina: true,
@@ -46,9 +53,9 @@ const AlgorithmVortex: React.FC = () => {
   return (
     <Particles
       id="algo-vortex"
-      options={options as any} 
+      options={options as any}
       style={{ position: "absolute", inset: 0, zIndex: 0 }}
-      init={particlesInit as any} 
+      init={particlesInit as any}
     />
   );
 };

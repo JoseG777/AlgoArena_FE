@@ -1,4 +1,4 @@
-import { Box, Button, Typography, Paper, Grid  } from "@mui/material";
+import { Box, Button, Typography, Paper, Grid } from "@mui/material";
 import { Link } from "react-router-dom";
 import BoltIcon from "@mui/icons-material/Bolt";
 import CodeIcon from "@mui/icons-material/Code";

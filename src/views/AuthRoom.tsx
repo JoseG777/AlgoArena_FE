@@ -40,7 +40,7 @@ const AuthRoom: React.FC = () => {
     };
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const handleTimerUpdate = (payload: { timeLeft: number }) => {
       setTimeLeft(payload.timeLeft);
     };
@@ -69,9 +69,7 @@ const AuthRoom: React.FC = () => {
     setTimeLeft(null);
 
     const opts =
-      allowUsername.trim().length > 0
-        ? { allow: { username: allowUsername.trim() } }
-        : {};
+      allowUsername.trim().length > 0 ? { allow: { username: allowUsername.trim() } } : {};
 
     socket.emit("createRoom", opts, ({ roomCode }: { roomCode: string }) => {
       setJoinedRoom(roomCode);
@@ -90,12 +88,7 @@ const AuthRoom: React.FC = () => {
     socket.emit(
       "joinRoom",
       code,
-      (res: {
-        success?: boolean;
-        roomCode?: string;
-        error?: string;
-        members?: string[];
-      }) => {
+      (res: { success?: boolean; roomCode?: string; error?: string; members?: string[] }) => {
         if (res?.error) {
           alert(res.error);
         } else if (res?.roomCode) {

@@ -151,11 +151,9 @@ const HostedJudge0Runner: React.FC = () => {
       const fs = typeof b["fails"] === "number" ? (b["fails"] as number) : null;
       setPasses(ps);
       setFails(fs);
-
-    
-      } catch (e: any) {
-        setErrorMsg(e?.message || "Network error");
-      }
+    } catch (e: any) {
+      setErrorMsg(e?.message || "Network error");
+    }
   }
 
   function onLangChange(next: Lang) {
@@ -272,7 +270,9 @@ const HostedJudge0Runner: React.FC = () => {
               lineHeight: 1.4,
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <div
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}
+            >
               <strong>Score:</strong>
               <span
                 style={{
@@ -282,8 +282,8 @@ const HostedJudge0Runner: React.FC = () => {
                     (score ?? 0) >= 70
                       ? "rgb(54, 139, 54)"
                       : (score ?? 0) >= 0
-                      ? "rgb(200, 200, 60)"
-                      : "rgb(200, 70, 70)",
+                        ? "rgb(200, 200, 60)"
+                        : "rgb(200, 70, 70)",
                 }}
               >
                 {score ?? "—"}
@@ -299,7 +299,7 @@ const HostedJudge0Runner: React.FC = () => {
 
               {(passes !== null || fails !== null) && (
                 <>
-                  <br/>
+                  <br />
                   <span style={{ color: "#555" }}> · </span>
                   <span style={{ color: "#bbb" }}>
                     Cases: {passes ?? 0} passed | {fails ?? 0} failed
@@ -365,4 +365,3 @@ const HostedJudge0Runner: React.FC = () => {
 };
 
 export default HostedJudge0Runner;
- 
