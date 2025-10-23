@@ -1,6 +1,7 @@
 import { Box, Button, Typography, Paper, LinearProgress } from "@mui/material";
 import { useState } from "react";
 
+
 const TriviaPage: React.FC = () => {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
 

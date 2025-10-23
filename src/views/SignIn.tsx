@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import {Box, TextField, Button, Typography, Paper, Link} from "@mui/material";
+import { Box, TextField, Button, Typography, Paper, Link } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
+import AlgorithmVortex from "../components/AlgorithmVortex";
 
 interface LoginFormData {
   identifyingInput: string;
@@ -31,7 +32,7 @@ const SignIn: React.FC = () => {
 
     try {
       const res = await fetch("http://localhost:3001/login", {
-        method: "POST", 
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData),
@@ -56,39 +57,40 @@ const SignIn: React.FC = () => {
 
   return (
     <Box
-    sx={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100vw",
-      height: "100vh",
-      margin:0,
-      padding:0,
-      overflow:"hidden",
-      background: "linear-gradient(160deg, #03045E, #000000)",
-      display: "flex",
-      flexDirection:"column",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    {/* LOGO */}
-    <Box sx={{ textAlign:"center", mb:3 }}>
-      <Box
-      component="img"
-      src="/logo.png"
-      alt="Algo Arena Logo"
       sx={{
-        width: { xs: "300px", sm: "580px", md: "520px" },
-        filter: "drop-shadow(0px 0px 10px rgba(76, 201, 240, 0.8))",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+        overflow: "hidden",
+        background: "linear-gradient(160deg, #03045E, #000000)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
       }}
-      />
-    </Box>
-    {/* Login box */}
-    <Paper 
-    elevation={10}
-    sx={{
-      width: "90%",
+    >
+      <AlgorithmVortex />
+      {/* LOGO */}
+      <Box sx={{ textAlign: "center", mb: 3 }}>
+        <Box
+          component="img"
+          src="/logo.png"
+          alt="Algo Arena Logo"
+          sx={{
+            width: { xs: "300px", sm: "580px", md: "520px" },
+            filter: "drop-shadow(0px 0px 10px rgba(76, 201, 240, 0.8))",
+          }}
+        />
+      </Box>
+      {/* Login box */}
+      <Paper
+        elevation={10}
+        sx={{
+          width: "90%",
           maxWidth: 400,
           padding: 4,
           borderRadius: 3,
@@ -98,9 +100,9 @@ const SignIn: React.FC = () => {
           backdropFilter: "blur(8px)",
           textAlign: "center",
           transform: "translateY(-90px)",
-    }}
-    >
-    <Box
+        }}
+      >
+        <Box
           component="form"
           onSubmit={handleSubmit}
           sx={{
@@ -109,8 +111,8 @@ const SignIn: React.FC = () => {
             gap: 2,
             alignItems: "center",
           }}
-          >
-            {/* USERNAME */}
+        >
+          {/* USERNAME */}
           <Box
             sx={{
               width: "100%",
@@ -136,7 +138,7 @@ const SignIn: React.FC = () => {
               value={formData.identifyingInput}
               onChange={handleChange}
               required
-              />
+            />
           </Box>
           {/* PASSWORD */}
           <Box
@@ -150,7 +152,7 @@ const SignIn: React.FC = () => {
               paddingX: 1.5,
               backgroundColor: "rgba(255, 255, 255, 0.05)",
             }}
-            >
+          >
             <LockIcon sx={{ color: "#4CC9F0" }} />
             <TextField
               fullWidth
@@ -168,8 +170,8 @@ const SignIn: React.FC = () => {
             />
           </Box>
 
-           {/* ENTER BUTTON */}
-           <Button
+          {/* ENTER BUTTON */}
+          <Button
             type="submit"
             fullWidth
             variant="contained"
@@ -204,10 +206,7 @@ const SignIn: React.FC = () => {
           )}
         </Box>
         {/* FOOTER LINK */}
-        <Typography
-          variant="body2"
-          sx={{ mt: 3, color: "#a3bffa", fontSize: "0.85rem" }}
-        >
+        <Typography variant="body2" sx={{ mt: 3, color: "#a3bffa", fontSize: "0.85rem" }}>
           Don't have an account?{" "}
           <Link href="/sign-up" underline="hover" sx={{ color: "#4CC9F0" }}>
             Sign Up
