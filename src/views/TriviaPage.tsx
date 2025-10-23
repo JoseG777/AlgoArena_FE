@@ -1,6 +1,6 @@
 import { Box, Button, Typography, Paper, LinearProgress } from "@mui/material";
 import { useState } from "react";
-import AlgorithmVortex from "../components/AlgorithmVortex";
+// import AlgorithmVortex from "../components/AlgorithmVortex";
 
 const TriviaPage: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
