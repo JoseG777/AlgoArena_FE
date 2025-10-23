@@ -1,14 +1,13 @@
 import { Box, Button, Typography, Paper, LinearProgress } from "@mui/material";
 import { useState } from "react";
 import AlgorithmVortex from "../components/AlgorithmVortex";
-import { Navigate } from "react-router-dom";
 
 const TriviaPage: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-  // Temporary placeholder data//
+
   const question = "Which of the following data structures uses LIFO (Last In, First Out) ? ";
-  const options = ["Queue", "Stack", "Heap", "Lonked List"];
+  const options = ["Queue", "Stack", "Heap", "Linked List"];
 
   return (
     <Box
@@ -17,6 +16,9 @@ const TriviaPage: React.FC = () => {
         minHeight: "100vh",
         background: "linear-gradient(160deg, #03045E, #000000)",
         display: "flex",
+        position: "fixed",
+        top: 0,
+        left: 0,
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
@@ -24,7 +26,7 @@ const TriviaPage: React.FC = () => {
         padding: 3,
       }}
     >
-          <AlgorithmVortex />
+         
       {/* Header */}
       <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 4 }}>
         Trivia Arena ⚡
@@ -47,7 +49,7 @@ const TriviaPage: React.FC = () => {
           textAlign: "center",
         }}
       >
-        <Typography variant="h6" sx={{ mb: 3 }}>
+        <Typography variant="h6" sx={{color: "#f1f1f1ff" , mb: 3 }}>
           {question}
         </Typography>
 

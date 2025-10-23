@@ -8,7 +8,8 @@ import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import AuthRoom from "./views/AuthRoom";
 import "./App.css";
 import Dashboard from "./views/Dashboard";
-import TriviaPage from "./views/TriviaPage";
+import TriviaPage from './views/TriviaPage';
+
 
 
 function App() {
@@ -67,14 +68,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        path="/TriviaPage"
-        element={
-          <ProtectedRoute>
-            <TriviaPage />
-          </ProtectedRoute>
-        }
-        
+        <Route
+          path="/trivia"
+          element={
+            <ProtectedRoute>
+              <TriviaPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
