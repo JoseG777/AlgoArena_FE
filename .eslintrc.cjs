@@ -18,12 +18,12 @@ module.exports = {
     "plugin:react-hooks/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:jsx-a11y/recommended",
-    "plugin:prettier/recommended", 
+    "plugin:prettier/recommended",
   ],
   rules: {
     "prettier/prettier": ["error"],
     "react/react-in-jsx-scope": "off",
-    "react/prop-types": "off", 
+    "react/prop-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
   },
   settings: {

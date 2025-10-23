@@ -71,7 +71,7 @@ const SignUp: React.FC = () => {
     } catch (err) {
       console.error(err);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
   // Custom styles for the text fields to achieve the desired look
