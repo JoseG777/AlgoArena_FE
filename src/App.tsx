@@ -6,6 +6,9 @@ import HostedJudge0Runner from "./views/HostedJude0Test";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import AuthRoom from "./views/AuthRoom";
+import SendFriendRequest from "./views/SendFriendRequest";
+import SeeFriendRequests from "./views/SeeFriendRequests";
+import SeeFriends from "./views/SeeFriends";
 import "./App.css";
 import Dashboard from "./views/Dashboard";
 
@@ -48,6 +51,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="auth-room"
           element={
@@ -65,6 +69,34 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/send-request"
+          element={
+            <ProtectedRoute>
+              <SendFriendRequest />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/see-requests"
+          element={
+            <ProtectedRoute>
+              <SeeFriendRequests />
+            </ProtectedRoute>
+          }
+        />
+  
+        <Route
+          path="/friends"
+          element={
+            <ProtectedRoute>
+              <SeeFriends />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );
