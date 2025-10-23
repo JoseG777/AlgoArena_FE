@@ -10,7 +10,7 @@ import SendFriendRequest from "./views/SendFriendRequest";
 import SeeFriendRequests from "./views/SeeFriendRequests";
 import SeeFriends from "./views/SeeFriends";
 import Dashboard from "./views/Dashboard";
-import TriviaPage from './views/TriviaPage';
+import TriviaPage from "./views/TriviaPage";
 import "./App.css";
 
 function App() {
@@ -88,7 +88,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-  
+
         <Route
           path="/friends"
           element={

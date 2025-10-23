@@ -12,7 +12,7 @@ export default function SendFriendRequest() {
       const res = await fetch("http://localhost:3001/friend-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", 
+        credentials: "include",
         body: JSON.stringify({ recipientUsername }),
       });
 

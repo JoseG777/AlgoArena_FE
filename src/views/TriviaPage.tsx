@@ -5,7 +5,6 @@ import { useState } from "react";
 const TriviaPage: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-
   const question = "Which of the following data structures uses LIFO (Last In, First Out) ? ";
   const options = ["Queue", "Stack", "Heap", "Linked List"];
 
@@ -26,7 +25,6 @@ const TriviaPage: React.FC = () => {
         padding: 3,
       }}
     >
-         
       {/* Header */}
       <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 4 }}>
         Trivia Arena ⚡
@@ -49,7 +47,7 @@ const TriviaPage: React.FC = () => {
           textAlign: "center",
         }}
       >
-        <Typography variant="h6" sx={{color: "#f1f1f1ff" , mb: 3 }}>
+        <Typography variant="h6" sx={{ color: "#f1f1f1ff", mb: 3 }}>
           {question}
         </Typography>
 

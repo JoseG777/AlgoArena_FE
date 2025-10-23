@@ -83,8 +83,12 @@ export default function SeeFriendRequests() {
           {requests.map((r) => (
             <li key={r.id}>
               From: @{r.requesterUsername} ({r.status}){" "}
-              <button onClick={() => accept(r.id)} disabled={busyId === r.id}>Accept</button>{" "}
-              <button onClick={() => reject(r.id)} disabled={busyId === r.id}>Reject</button>
+              <button onClick={() => accept(r.id)} disabled={busyId === r.id}>
+                Accept
+              </button>{" "}
+              <button onClick={() => reject(r.id)} disabled={busyId === r.id}>
+                Reject
+              </button>
             </li>
           ))}
         </ul>
