@@ -9,8 +9,7 @@ import {
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, Link } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -102,7 +101,7 @@ const Dashboard: React.FC = () => {
               }}
             >
               <CodeIcon sx={{ fontSize: { xs: "3.5rem", sm: "4.5rem" }, color: "#38bdf8" }} />
-              CODING CHALLENGE
+              <Link to="/test-judge"> CODING CHALLENGE </Link>
             </Button>
           </Grid>
           <Grid item>
@@ -146,7 +145,7 @@ const Dashboard: React.FC = () => {
             boxShadow: "0 0 20px rgba(124, 58, 237, 0.5)",
           }}
         >
-          CREATE ROOM
+          <Link to="/auth-room">CREATE ROOM</Link>
         </Button>
       </Box>
     </Box>

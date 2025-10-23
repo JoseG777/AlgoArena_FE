@@ -291,9 +291,12 @@ const HostedJudge0Runner: React.FC = () => {
             </div>
 
             <div style={{ marginTop: "6px", fontSize: "0.95rem" }}>
-              <span style={{ color: isCompileError ? "rgb(200,70,70)" : "#bbb" }}>
-                {isCompileError ? "Compilation Error" : "No compilation error"}
-              </span>
+              {status && (
+                <span style={{ color: isCompileError ? "rgb(200,70,70)" : "#bbb" }}>
+                  {isCompileError ? "Compilation Error" : "No compilation error"}
+                </span>
+              )}
+
               {(passes !== null || fails !== null) && (
                 <>
                   <br/>

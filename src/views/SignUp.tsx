@@ -6,9 +6,6 @@ import LockOutlined from '@mui/icons-material/LockOutlined';
 import logo from "../assets/algo.png";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 
-
-
-
 interface SignUpFormData {
     username: string;
     email: string;
@@ -30,8 +27,6 @@ const SignUp: React.FC = ()=>
     const [success, setSuccess] = useState<string>(""); 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
-
-
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) : void => {
         const { name, value } = e.target; // this will pull fields from the <input.../> part of the form, we can deconstruct and pull specific values
@@ -100,18 +95,17 @@ const SignUp: React.FC = ()=>
 
 
     const alertStyles = {
-  bgcolor: 'transparent',
-  fontWeight: 'bold',
-  letterSpacing: '0.05em',
-  border: 'none',
-  textAlign: 'center',
-  boxShadow: 'none'
-};
+        bgcolor: 'transparent',
+        fontWeight: 'bold',
+        letterSpacing: '0.05em',
+        border: 'none',
+        textAlign: 'center',
+        boxShadow: 'none'
+    };
 
 
     return (
         <Box
-        
             sx={{
                 position: 'fixed',
                 left: '0',
