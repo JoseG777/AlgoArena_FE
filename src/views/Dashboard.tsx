@@ -107,6 +107,7 @@ const Dashboard: React.FC = () => {
           </Grid>
           <Grid item>
             <Button
+            component={Link} to="/TriviaPage"
               variant="contained"
               sx={{
                 width: { xs: 480, sm: 480 },
