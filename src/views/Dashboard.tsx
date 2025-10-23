@@ -84,6 +84,7 @@ const Dashboard: React.FC = () => {
           <Grid item>
             <Button
               variant="contained"
+              onClick={() => navigate("/test-judge")}
               sx={{
                 width: { xs: 480, sm: 480 },
                 height: { xs: 450, sm: 350 },
@@ -102,12 +103,14 @@ const Dashboard: React.FC = () => {
               }}
             >
               <CodeIcon sx={{ fontSize: { xs: "3.5rem", sm: "4.5rem" }, color: "#38bdf8" }} />
-              <Link to="/test-judge"> CODING CHALLENGE </Link>
+           Coding Challenge
             </Button>
           </Grid>
           <Grid item>
             <Button
+            component={Link} to="/TriviaPage"
               variant="contained"
+                onClick={() => navigate("/trivia")}
               sx={{
                 width: { xs: 480, sm: 480 },
                 height: { xs: 450, sm: 350 },

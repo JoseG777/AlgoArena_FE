@@ -9,8 +9,9 @@ import AuthRoom from "./views/AuthRoom";
 import SendFriendRequest from "./views/SendFriendRequest";
 import SeeFriendRequests from "./views/SeeFriendRequests";
 import SeeFriends from "./views/SeeFriends";
-import "./App.css";
 import Dashboard from "./views/Dashboard";
+import TriviaPage from './views/TriviaPage';
+import "./App.css";
 
 function App() {
   return (
@@ -97,6 +98,14 @@ function App() {
           }
         />
 
+        <Route
+          path="/trivia"
+          element={
+            <ProtectedRoute>
+              <TriviaPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
