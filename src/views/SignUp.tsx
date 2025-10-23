@@ -127,7 +127,7 @@ const SignUp: React.FC = () => {
       }}
     >
       <AlgorithmVortex />
-      <Container maxWidth="md">
+      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
         {/* Logo */}
         <Box sx={{ display: "flex", justifyContent: "center", mt: 1, mb: 3 }}>
           <Box
