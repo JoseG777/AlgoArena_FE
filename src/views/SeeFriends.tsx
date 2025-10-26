@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 type Friend = {
   id: string;
   username: string;
+  date: string;
 };
 
 export default function SeeFriends() {
@@ -18,6 +19,7 @@ export default function SeeFriends() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load friends");
       setFriends(data);
+      console.log(data);
     } catch (e: any) {
       console.error(e);
       setError(e.message || "Network error");
@@ -38,7 +40,7 @@ export default function SeeFriends() {
       ) : (
         <ul>
           {friends.map((f) => (
-            <li key={f.id}>@{f.username}</li>
+            <li key={f.id}>@{f.username} | {f.date}</li>
           ))}
         </ul>
       )}
