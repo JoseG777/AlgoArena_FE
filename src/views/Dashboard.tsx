@@ -26,7 +26,7 @@ const Dashboard: React.FC = () => {
     >
       <AlgorithmVortex />
       {/* Header */}
-      <NavBar/>
+      <NavBar />
 
       {/* Main Content: Centered */}
       <Box

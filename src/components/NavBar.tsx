@@ -12,7 +12,7 @@ const NavBar: React.FC = () => {
       sx={{
         backgroundColor: "transparent",
         padding: "0.25rem 1.5rem",
-        marginTop: "-1.5rem",  
+        marginTop: "-1.5rem",
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -39,24 +39,15 @@ const NavBar: React.FC = () => {
             HOME
           </Button>
 
-          <Button
-            color="inherit"
-            sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
-          >
+          <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
             STATS
           </Button>
 
-          <Button
-            color="inherit"
-            sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
-          >
+          <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
             FRIENDS
           </Button>
 
-          <Button
-            color="inherit"
-            sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
-          >
+          <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
             LOGOUT
           </Button>
         </Box>
