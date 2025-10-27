@@ -186,7 +186,8 @@ const HostedJudge0Runner: React.FC = () => {
 
       <div style={{ color: "#aaa", marginBottom: 8 }}>
         Problem: <strong>{prob.title}</strong> ({prob.problemId}) · Difficulty:{" "}
-        <strong>{prob.difficulty}</strong> {/*· Game Start:{" "}
+        <strong>{prob.difficulty}</strong>{" "}
+        {/*· Game Start:{" "}
         <strong>{new Date(gameStartTs).toLocaleTimeString()}</strong>*/}
       </div>
 

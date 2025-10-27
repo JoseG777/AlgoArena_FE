@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import NavBar from "../components/NavBar";
 
 type Friend = {
   id: string;
@@ -58,6 +59,7 @@ export default function SeeFriends() {
 
   return (
     <div>
+      <NavBar/>
       <h2>Your Friends</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 

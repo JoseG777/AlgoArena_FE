@@ -43,7 +43,11 @@ const NavBar: React.FC = () => {
             STATS
           </Button>
 
-          <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
+          <Button
+            color="inherit"
+            sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
+            onClick={() => navigate("/friends")}
+          >
             FRIENDS
           </Button>
 
