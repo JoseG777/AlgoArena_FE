@@ -10,7 +10,8 @@ import {
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import NavBar from "../components/NavBar";
 
 
 const Dashboard: React.FC = () => {
@@ -31,42 +32,8 @@ const Dashboard: React.FC = () => {
         overflow: "hidden",
       }}
     >
-          <AlgorithmVortex />
-      {/* Header */}
-      <AppBar
-        position="static"
-        elevation={0}
-        sx={{ backgroundColor: "transparent", padding: "0.5rem 2rem" }}
-      >
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-         
-         
-          {/* Logo and Title */}
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
-              component="img"
-              src="/logo.png" 
-              alt="Algo Arena Logo"
-              sx={{ 
-                width: { xs: 350, sm: 250 },
-                filter: "drop-shadow(0px 0px 8px rgba(0, 150, 255, 0.6))",
-              }}
-            />
-            <Box>
-              
-            </Box>
-          </Box>
-
-          {/* Navigation Links */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
-            <Button sx={{ fontWeight: "bold", fontSize: "1.2rem" }} onClick={() => navigate("/home")}>HOME</Button>
-            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>STATS</Button>
-            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>FRIENDS</Button>
-            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>LOGOUT</Button>
-          </Box>
-        </Toolbar>
-      </AppBar>
+      <AlgorithmVortex />
+        <NavBar />  
 
       {/* Main Content: Centered */}
       <Box
