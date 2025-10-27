@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
+import "./Arena/Arena.css";
 
 // Base64 helpers for Judge0 (handles unicode safely)
 function b64enc(s: string) {
@@ -124,6 +125,7 @@ const HostedJudge0Runner: React.FC = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             language_id: LANGUAGE_IDS[language],
             source_code: b64enc(fullSource),
@@ -139,6 +141,7 @@ const HostedJudge0Runner: React.FC = () => {
       }
 
       const d = data as BackendGraded;
+      console.log(d);
 
       setStatus(d.status || "Unknown");
       setStdout(d.stdout || "");
@@ -172,55 +175,26 @@ const HostedJudge0Runner: React.FC = () => {
   const isCompileError = /Compilation Error/i.test(status);
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
-        padding: "20px",
-        gap: "20px",
-        boxSizing: "border-box",
-        backgroundColor: "#0e0e0e",
-      }}
-    >
-      <h1 style={{ color: "rgba(184, 66, 31, 1)", margin: 0 }}>AlgoArena Editor</h1>
+    <div className="aa-root">
+      <h1 className="aa-title">AlgoArena Editor</h1>
 
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          gap: "20px",
-          minHeight: 0,
-          flexWrap: "nowrap",
-        }}
-      >
+      <div className="aa-row">
         {/* Editor Card */}
-        <div
-          style={{
-            flex: 2,
-            minWidth: "400px",
-            display: "flex",
-            flexDirection: "column",
-            backgroundColor: "#1b1b1b",
-            borderRadius: "8px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-            padding: "10px",
-            minHeight: 0,
-          }}
-        >
-          <div style={{ marginBottom: "10px" }}>
-            <label style={{ color: "#fff", marginRight: "5px" }}>Language:</label>
+        <div className="aa-card">
+          <div className="aa-control-row">
+            <label className="aa-label">Language:</label>
             <select
               value={language}
               onChange={(e) => onLangChange(e.target.value as Lang)}
-              style={{ padding: "4px", borderRadius: "4px" }}
+              className="aa-select"
             >
               <option value="typescript">TypeScript</option>
               <option value="python">Python</option>
             </select>
           </div>
+
           <Editor
+            className="aa-editor"
             height="100%"
             theme="vs-dark"
             language={language}
@@ -230,69 +204,27 @@ const HostedJudge0Runner: React.FC = () => {
           />
         </div>
 
-        <div
-          style={{
-            flex: 1,
-            minWidth: "300px",
-            display: "flex",
-            flexDirection: "column",
-            backgroundColor: "#1b1b1b",
-            borderRadius: "8px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-            padding: "10px",
-            minHeight: 0,
-          }}
-        >
-          <button
-            onClick={run}
-            style={{
-              padding: "8px",
-              borderRadius: "6px",
-              backgroundColor: "rgba(127, 136, 136, 1)",
-              border: "none",
-              color: "#000",
-              fontWeight: "bold",
-              marginBottom: "10px",
-              cursor: "pointer",
-            }}
-          >
+        {/* Right Panel */}
+        <div className="aa-side">
+          <button onClick={run} className="aa-run-btn">
             Run Code
           </button>
 
-          <div
-            style={{
-              marginBottom: "10px",
-              backgroundColor: "#121212",
-              borderRadius: "6px",
-              padding: "10px",
-              color: "#fff",
-              fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
-              lineHeight: 1.4,
-            }}
-          >
-            <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}
-            >
+          <div className="aa-metrics">
+            <div className="aa-metrics-row">
               <strong>Score:</strong>
               <span
-                style={{
-                  fontWeight: "bold",
-                  fontSize: "1.2rem",
-                  color:
-                    (score ?? 0) >= 70
-                      ? "rgb(54, 139, 54)"
-                      : (score ?? 0) >= 0
-                        ? "rgb(200, 200, 60)"
-                        : "rgb(200, 70, 70)",
-                }}
+                className={
+                  "aa-score " + ((score ?? 0) >= 70 ? "good" : (score ?? 0) >= 0 ? "warn" : "bad")
+                }
               >
                 {score ?? "—"}
               </span>
             </div>
 
-            <div style={{ marginTop: "6px", fontSize: "0.95rem" }}>
+            <div className="aa-status-line">
               {status && (
-                <span style={{ color: isCompileError ? "rgb(200,70,70)" : "#bbb" }}>
+                <span className={isCompileError ? "aa-status-err" : "aa-status-ok"}>
                   {isCompileError ? "Compilation Error" : "No compilation error"}
                 </span>
               )}
@@ -300,8 +232,8 @@ const HostedJudge0Runner: React.FC = () => {
               {(passes !== null || fails !== null) && (
                 <>
                   <br />
-                  <span style={{ color: "#555" }}> · </span>
-                  <span style={{ color: "#bbb" }}>
+                  <span className="aa-sep"> · </span>
+                  <span className="aa-cases">
                     Cases: {passes ?? 0} passed | {fails ?? 0} failed
                   </span>
                 </>
@@ -309,19 +241,7 @@ const HostedJudge0Runner: React.FC = () => {
             </div>
           </div>
 
-          <div
-            style={{
-              flex: 1,
-              backgroundColor: "#010101",
-              padding: "10px",
-              borderRadius: "6px",
-              color: "rgba(54, 139, 54, 1)",
-              fontFamily: "monospace",
-              overflowY: "auto",
-              whiteSpace: "pre-wrap",
-              minHeight: 0,
-            }}
-          >
+          <div className="aa-log">
             {errorMsg && (
               <>
                 <strong>Error:</strong> {errorMsg}

@@ -9,6 +9,7 @@ type Friend = {
 export default function SeeFriends() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
 
   async function fetchFriends() {
     setError("");
@@ -26,6 +27,31 @@ export default function SeeFriends() {
     }
   }
 
+  async function removeFriend(username: string) {
+    setError("");
+    setBusy(username);
+    try {
+      const res = await fetch(`http://localhost:3001/friends/${encodeURIComponent(username)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to remove friend");
+
+      setFriends((prev) => prev.filter((f) => f.username !== username));
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || "Network error");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function confirmAndRemove(username: string) {
+    const ok = window.confirm(`Are you sure you want to remove @${username} from your friends?`);
+    if (!ok) return;
+    removeFriend(username);
+  }
   useEffect(() => {
     fetchFriends();
   }, []);
@@ -40,7 +66,12 @@ export default function SeeFriends() {
       ) : (
         <ul>
           {friends.map((f) => (
-            <li key={f.id}>@{f.username} | {f.date}</li>
+            <li key={f.id}>
+              @{f.username} | {f.date}
+              <button onClick={() => confirmAndRemove(f.username)} disabled={busy === f.username}>
+                {busy === f.username ? "Removing..." : "Delete"}
+              </button>
+            </li>
           ))}
         </ul>
       )}
