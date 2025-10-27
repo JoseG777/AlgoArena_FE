@@ -1,8 +1,9 @@
 import React from "react";
-import { Box, Button, Grid, AppBar, Toolbar } from "@mui/material";
+import { Box, Button, Grid } from "@mui/material";
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
+import NavBar from "../components/NavBar";
 import { useNavigate, Link } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
@@ -25,47 +26,7 @@ const Dashboard: React.FC = () => {
     >
       <AlgorithmVortex />
       {/* Header */}
-      <AppBar
-        position="static"
-        elevation={0}
-        sx={{ backgroundColor: "transparent", padding: "0.5rem 2rem" }}
-      >
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          {/* Logo and Title */}
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
-              component="img"
-              src="/logo.png"
-              alt="Algo Arena Logo"
-              sx={{
-                width: { xs: 350, sm: 250 },
-                filter: "drop-shadow(0px 0px 8px rgba(0, 150, 255, 0.6))",
-              }}
-            />
-            <Box></Box>
-          </Box>
-
-          {/* Navigation Links */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
-            <Button
-              sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
-              onClick={() => navigate("/dash-board")}
-            >
-              HOME
-            </Button>
-            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
-              STATS
-            </Button>
-            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
-              FRIENDS
-            </Button>
-            <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
-              LOGOUT
-            </Button>
-          </Box>
-        </Toolbar>
-      </AppBar>
+      <NavBar/>
 
       {/* Main Content: Centered */}
       <Box
