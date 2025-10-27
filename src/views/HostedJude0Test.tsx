@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Editor from "@monaco-editor/react";
+import problems from "../data/problems.json";
 import "./Arena/Arena.css";
 
 // Base64 helpers for Judge0 (handles unicode safely)
@@ -14,72 +15,30 @@ const LANGUAGE_IDS = {
 
 type Lang = keyof typeof LANGUAGE_IDS;
 
-const DEFAULT_SNIPPET: Record<Lang, string> = {
-  typescript: `function twoSum(nums: number[], target: number): number[] {
-  const lookup: Record<number, number> = {};
-  for (let i = 0; i < nums.length; i++) {
-    const diff = target - nums[i];
-    if (lookup[diff] !== undefined) {
-      return [lookup[diff], i];
-    }
-    lookup[nums[i]] = i;
-  }
-  return [];
+const gameKey = (problemId: string) => `aa:gameStartTs:${problemId}`;
+
+function getOrInitGameStartTs(problemId: string) {
+  const k = gameKey(problemId);
+  const existing = localStorage.getItem(k);
+  if (existing) return Number(existing);
+  const ts = Date.now();
+  localStorage.setItem(k, String(ts));
+  return ts;
 }
-`,
-  python: `def two_sum(nums, target):
-    lookup = {}
-    for i, n in enumerate(nums):
-        if target - n in lookup:
-            return [lookup[target - n], i]
-        lookup[n] = i
-    return []
-`,
+
+function resetGameStartTs(problemId: string) {
+  const ts = Date.now();
+  localStorage.setItem(gameKey(problemId), String(ts));
+  return ts;
+}
+
+type Problem = {
+  problemId: string;
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  startingCode: Record<Lang, string>;
+  testHarness: Record<Lang, string>;
 };
-
-// Harness generators: run hidden tests on user code
-function buildHarness(lang: Lang): string {
-  if (lang === "python") {
-    return `
-def run_tests():
-    test_cases = [
-        (([2,7,11,15], 9), [0,1]),
-        (([3,2,4], 6), [1,2]),
-        (([3,3], 6), [0,1]),
-        (([1,2,3], 7), []),
-    ]
-    for i, (args, expected) in enumerate(test_cases, 1):
-        result = two_sum(*args)
-        print(f"Case {i}: {'PASS' if result == expected else 'FAIL'} | Got {result}, Expected {expected}")
-
-run_tests()
-`;
-  }
-
-  // TypeScript harness
-  return `
-function runTests() {
-  const testCases: { args: [number[], number]; expected: number[] }[] = [
-    { args: [[2, 7, 11, 15], 9], expected: [0, 1] },
-    { args: [[3, 2, 4], 6], expected: [1, 2] },
-    { args: [[3, 3], 6], expected: [0, 1] },
-    { args: [[1, 2, 3], 7], expected: [] },
-  ];
-
-  testCases.forEach((tc, i) => {
-    const result = twoSum(...tc.args);
-    console.log(
-      "Case " + (i + 1) + ": " +
-      (JSON.stringify(result) === JSON.stringify(tc.expected) ? "PASS" : "FAIL") +
-      " | Got " + JSON.stringify(result) +
-      ", Expected " + JSON.stringify(tc.expected)
-    );
-  });
-}
-
-runTests();
-`;
-}
 
 type BackendGraded = {
   status: string;
@@ -93,8 +52,17 @@ type BackendGraded = {
 };
 
 const HostedJudge0Runner: React.FC = () => {
+  const defaultProblemId =
+    (Array.isArray(problems) && (problems as Problem[])[0]?.problemId) || "two-sum";
+  const [selectedProblemId, setSelectedProblemId] = useState<string>(defaultProblemId);
+
+  const problem: Problem | undefined = useMemo(
+    () => (problems as Problem[]).find((p) => p.problemId === selectedProblemId),
+    [selectedProblemId]
+  );
+
   const [language, setLanguage] = useState<Lang>("typescript");
-  const [source, setSource] = useState<string>(DEFAULT_SNIPPET["typescript"]);
+  const [source, setSource] = useState<string>("");
 
   const [status, setStatus] = useState<string>("");
   const [stdout, setStdout] = useState<string>("");
@@ -105,6 +73,30 @@ const HostedJudge0Runner: React.FC = () => {
   const [score, setScore] = useState<number | null>(null);
   const [passes, setPasses] = useState<number | null>(null);
   const [fails, setFails] = useState<number | null>(null);
+
+  const [gameStartTs, setGameStartTs] = useState<number>(() =>
+    getOrInitGameStartTs(selectedProblemId)
+  );
+
+  useEffect(() => {
+    if (!problem) return;
+    setSource(problem.startingCode[language] ?? "");
+  }, [problem, language, selectedProblemId]);
+
+  if (!problem) {
+    return (
+      <div className="aa-root">
+        <h1 className="aa-title">AlgoArena Editor</h1>
+        <div style={{ color: "#f88", padding: 16 }}>Problem "{selectedProblemId}" not found.</div>
+      </div>
+    );
+  }
+
+  const prob: Problem = problem;
+
+  function buildHarness(lang: Lang): string {
+    return prob.testHarness[lang] ?? "";
+  }
 
   async function run() {
     setErrorMsg("");
@@ -119,19 +111,17 @@ const HostedJudge0Runner: React.FC = () => {
     try {
       const fullSource = `${source}\n\n${buildHarness(language)}`;
 
-      const res = await fetch(
-        //"https://ce.judge0.com/submissions?base64_encoded=true&wait=true" <- use this if you experience rate limiting
-        "http://localhost:3001/judge0/run",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            language_id: LANGUAGE_IDS[language],
-            source_code: b64enc(fullSource),
-          }),
-        }
-      );
+      const res = await fetch("http://localhost:3001/judge0/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          language_id: LANGUAGE_IDS[language],
+          source_code: b64enc(fullSource),
+          problemId: selectedProblemId,
+          gameStartTs,
+        }),
+      });
 
       const data: BackendGraded | { error: string } = await res.json();
 
@@ -141,7 +131,6 @@ const HostedJudge0Runner: React.FC = () => {
       }
 
       const d = data as BackendGraded;
-      console.log(d);
 
       setStatus(d.status || "Unknown");
       setStdout(d.stdout || "");
@@ -161,15 +150,32 @@ const HostedJudge0Runner: React.FC = () => {
 
   function onLangChange(next: Lang) {
     setLanguage(next);
-    setSource(DEFAULT_SNIPPET[next]);
+  }
+
+  function onProblemChange(nextId: string) {
+    setSelectedProblemId(nextId);
+    const ts = getOrInitGameStartTs(nextId);
+    setGameStartTs(ts);
     setStatus("");
     setStdout("");
     setStderr("");
     setCompileOutput("");
-    setErrorMsg("");
     setScore(null);
     setPasses(null);
     setFails(null);
+  }
+
+  function startNewGame() {
+    const ts = resetGameStartTs(selectedProblemId);
+    setGameStartTs(ts);
+    setStatus("");
+    setStdout("");
+    setStderr("");
+    setCompileOutput("");
+    setScore(null);
+    setPasses(null);
+    setFails(null);
+    setSource(prob.startingCode[language] ?? "");
   }
 
   const isCompileError = /Compilation Error/i.test(status);
@@ -178,19 +184,49 @@ const HostedJudge0Runner: React.FC = () => {
     <div className="aa-root">
       <h1 className="aa-title">AlgoArena Editor</h1>
 
+      <div style={{ color: "#aaa", marginBottom: 8 }}>
+        Problem: <strong>{prob.title}</strong> ({prob.problemId}) · Difficulty:{" "}
+        <strong>{prob.difficulty}</strong> {/*· Game Start:{" "}
+        <strong>{new Date(gameStartTs).toLocaleTimeString()}</strong>*/}
+      </div>
+
       <div className="aa-row">
-        {/* Editor Card */}
         <div className="aa-card">
-          <div className="aa-control-row">
-            <label className="aa-label">Language:</label>
-            <select
-              value={language}
-              onChange={(e) => onLangChange(e.target.value as Lang)}
-              className="aa-select"
-            >
-              <option value="typescript">TypeScript</option>
-              <option value="python">Python</option>
-            </select>
+          <div className="aa-control-row" style={{ gap: 8, flexWrap: "wrap" }}>
+            <div>
+              <label className="aa-label" style={{ marginRight: 6 }}>
+                Language:
+              </label>
+              <select
+                value={language}
+                onChange={(e) => onLangChange(e.target.value as Lang)}
+                className="aa-select"
+              >
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="aa-label" style={{ marginRight: 6 }}>
+                Problem:
+              </label>
+              <select
+                value={selectedProblemId}
+                onChange={(e) => onProblemChange(e.target.value)}
+                className="aa-select"
+              >
+                {(problems as Problem[]).map((p) => (
+                  <option key={p.problemId} value={p.problemId}>
+                    {p.title} ({p.difficulty})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button className="aa-run-btn" onClick={startNewGame}>
+              Start New Game
+            </button>
           </div>
 
           <Editor
@@ -204,7 +240,6 @@ const HostedJudge0Runner: React.FC = () => {
           />
         </div>
 
-        {/* Right Panel */}
         <div className="aa-side">
           <button onClick={run} className="aa-run-btn">
             Run Code
