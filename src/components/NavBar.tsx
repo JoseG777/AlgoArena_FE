@@ -5,6 +5,26 @@ import { useNavigate } from "react-router-dom";
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        localStorage.clear();
+        sessionStorage.clear();
+
+        window.location.href = "/";
+      } else {
+        console.error("Logout failed:", await res.text());
+      }
+    } catch (err) {
+      console.error("Logout request error:", err);
+    }
+  };
+
   return (
     <AppBar
       position="static"
@@ -51,7 +71,11 @@ const NavBar: React.FC = () => {
             FRIENDS
           </Button>
 
-          <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
+          <Button
+            color="inherit"
+            sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
+            onClick={handleLogout}
+          >
             LOGOUT
           </Button>
         </Box>

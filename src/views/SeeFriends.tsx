@@ -59,7 +59,7 @@ export default function SeeFriends() {
 
   return (
     <div>
-      <NavBar/>
+      <NavBar />
       <h2>Your Friends</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
