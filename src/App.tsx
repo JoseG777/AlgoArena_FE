@@ -11,6 +11,7 @@ import SeeFriendRequests from "./views/SeeFriendRequests";
 import SeeFriends from "./views/SeeFriends";
 import Dashboard from "./views/Dashboard";
 import TriviaPage from "./views/TriviaPage";
+import BattleRoom from "./views/BattleRoom";
 import "./App.css";
 
 function App() {
@@ -49,6 +50,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/battle/:code"
+          element={
+            <ProtectedRoute>
+              <BattleRoom />
             </ProtectedRoute>
           }
         />
