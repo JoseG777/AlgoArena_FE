@@ -1,13 +1,108 @@
-import React from "react";
-import { Box, Button, Grid } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
+  Typography,
+} from "@mui/material";
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 import NavBar from "../components/NavBar";
 import { useNavigate, Link } from "react-router-dom";
 
+type FriendRow = { id: string; username: string; date: string };
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [lang, setLang] = useState<"typescript" | "python">("typescript");
+  const [creating, setCreating] = useState(false);
+
+  const [openSetup, setOpenSetup] = useState(false);
+
+  const [friends, setFriends] = useState<FriendRow[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState<boolean>(true);
+  const [friendsErr, setFriendsErr] = useState<string>("");
+
+  const [selectedFriendId, setSelectedFriendId] = useState<string>("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<"easy" | "medium" | "hard">("easy");
+  const [selectedDurationMin, setSelectedDurationMin] = useState<5 | 10 | 15>(5);
+
+  useEffect(() => {
+    let aborted = false;
+    (async () => {
+      setFriendsLoading(true);
+      setFriendsErr("");
+      try {
+        const res = await fetch("http://localhost:3001/friends", { credentials: "include" });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.error || "Failed to load friends");
+        }
+        const data: FriendRow[] = await res.json();
+        if (aborted) return;
+        setFriends(data);
+        if (data.length > 0) setSelectedFriendId(data[0].id);
+      } catch (e: any) {
+        if (!aborted) setFriendsErr(e?.message || "Could not load friends");
+      } finally {
+        if (!aborted) setFriendsLoading(false);
+      }
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, []);
+
+  function findSelectedFriendUsername(): string | null {
+    const f = friends.find((x) => x.id === selectedFriendId);
+    return f?.username ?? null;
+  }
+
+  const canStart = !friendsLoading && !friendsErr && !!selectedFriendId;
+
+  async function createRoom() {
+    if (creating) return;
+    setCreating(true);
+    try {
+      const allowUsername = findSelectedFriendUsername();
+      const durationSec = selectedDurationMin * 60;
+      const difficulty = selectedDifficulty; 
+
+      const res = await fetch("http://localhost:3001/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          difficulty,
+          durationSec,
+          allowUsername,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || "Failed to create room");
+      }
+
+      const data = await res.json();
+      setOpenSetup(false);
+      navigate(`/battle/${encodeURIComponent(data.code)}?lang=${encodeURIComponent(lang)}`);
+    } catch (e: any) {
+      alert(e?.message || "Could not create room");
+    } finally {
+      setCreating(false);
+    }
+  }
 
   return (
     <Box
@@ -25,10 +120,8 @@ const Dashboard: React.FC = () => {
       }}
     >
       <AlgorithmVortex />
-      {/* Header */}
       <NavBar />
 
-      {/* Main Content: Centered */}
       <Box
         sx={{
           flexGrow: 1,
@@ -40,12 +133,12 @@ const Dashboard: React.FC = () => {
           padding: 4,
         }}
       >
-        {/* Feature Buttons */}
         <Grid container spacing={4} justifyContent="center">
           <Grid item>
             <Button
               variant="contained"
-              onClick={() => navigate("/test-judge")}
+              onClick={() => setOpenSetup(true)}
+              disabled={creating}
               sx={{
                 width: { xs: 480, sm: 480 },
                 height: { xs: 450, sm: 350 },
@@ -64,15 +157,15 @@ const Dashboard: React.FC = () => {
               }}
             >
               <CodeIcon sx={{ fontSize: { xs: "3.5rem", sm: "4.5rem" }, color: "#38bdf8" }} />
-              Coding Challenge
+              {creating ? "CREATING…" : "Coding Challenge"}
             </Button>
           </Grid>
+
           <Grid item>
             <Button
               component={Link}
               to="/trivia"
               variant="contained"
-              onClick={() => navigate("/trivia")}
               sx={{
                 width: { xs: 480, sm: 480 },
                 height: { xs: 450, sm: 350 },
@@ -96,24 +189,102 @@ const Dashboard: React.FC = () => {
           </Grid>
         </Grid>
 
-        {/* Create Room Button */}
-        <Button
-          variant="contained"
-          sx={{
-            backgroundColor: "#7c3aed",
-            "&:hover": { backgroundColor: "#6d28d9" },
-            width: { xs: "80%", sm: "auto" },
-            px: 12,
-            py: 1.5,
-            fontSize: "1.1rem",
-            fontWeight: "bold",
-            borderRadius: "12px",
-            boxShadow: "0 0 20px rgba(124, 58, 237, 0.5)",
-          }}
-        >
-          <Link to="/auth-room">CREATE ROOM</Link>
-        </Button>
+        <div style={{ marginTop: 24 }}>
+          <label style={{ marginRight: 8 }}>Language:&nbsp;</label>
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value as "typescript" | "python")}
+            style={{ padding: 6, borderRadius: 8 }}
+          >
+            <option value="typescript">TypeScript</option>
+            <option value="python">Python</option>
+          </select>
+        </div>
       </Box>
+
+      <Dialog
+        open={openSetup}
+        onClose={() => (!creating ? setOpenSetup(false) : undefined)}
+        fullWidth
+        maxWidth="sm"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !creating && canStart) {
+            e.preventDefault();
+            createRoom();
+          }
+        }}
+      >
+        <DialogTitle>Start a Coding Battle</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <FormControl fullWidth>
+              <InputLabel id="friend-label">Friend</InputLabel>
+              <Select
+                labelId="friend-label"
+                label="Friend"
+                value={selectedFriendId}
+                onChange={(e) => setSelectedFriendId(e.target.value as string)}
+                disabled={friendsLoading || !!friendsErr}
+              >
+                {friendsLoading && <MenuItem disabled>Loading…</MenuItem>}
+                {friendsErr && <MenuItem disabled>Error loading friends</MenuItem>}
+                {!friendsLoading && !friendsErr && friends.length === 0 && (
+                  <MenuItem disabled>No friends yet</MenuItem>
+                )}
+                {!friendsLoading &&
+                  !friendsErr &&
+                  friends.map((f) => (
+                    <MenuItem key={f.id} value={f.id}>
+                      {f.username}
+                    </MenuItem>
+                  ))}
+              </Select>
+              <Typography variant="caption" sx={{ mt: 0.5 }}>
+                Pick a friend to invite.
+              </Typography>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="difficulty-label">Difficulty</InputLabel>
+              <Select
+                labelId="difficulty-label"
+                label="Difficulty"
+                value={selectedDifficulty}
+                onChange={(e) =>
+                  setSelectedDifficulty(e.target.value as "easy" | "medium" | "hard")
+                }
+              >
+                <MenuItem value="easy">Easy</MenuItem>
+                <MenuItem value="medium">Medium</MenuItem>
+                <MenuItem value="hard">Hard</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="duration-label">Duration</InputLabel>
+              <Select
+                labelId="duration-label"
+                label="Duration"
+                value={selectedDurationMin}
+                onChange={(e) => setSelectedDurationMin(Number(e.target.value) as 5 | 10 | 15)}
+              >
+                <MenuItem value={5}>5 minutes</MenuItem>
+                <MenuItem value={10}>10 minutes</MenuItem>
+                <MenuItem value={15}>15 minutes</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setOpenSetup(false)} disabled={creating}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={createRoom} disabled={creating || !canStart}>
+            {creating ? "Starting…" : "Start"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
