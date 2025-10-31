@@ -8,6 +8,8 @@ import PublicOnlyRoute from './components/PublicOnlyRoute';
 import AuthRoom from './views/AuthRoom';
 import Rooms from './views/Rooms';
 import './App.css'
+import TriviaPage from './views/TriviaPage';
+
 
 function App() {
   return (
@@ -52,6 +54,9 @@ function App() {
         />
 
         <Route path="/room-test" element={<Rooms/>}/>
+
+        <Route path="/trivia" element={<TriviaPage/>} />
+        
       </Routes>
     </BrowserRouter>
   )
