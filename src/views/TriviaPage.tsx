@@ -1,16 +1,15 @@
-import { Box, Button, Typography, Paper, LinearProgress, CircularProgress } from "@mui/material";
-import { useEffect, useState } from "react";
+import {Box, Button, Typography, Paper, LinearProgress, CircularProgress,} from "@mui/material";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import { blue } from "@mui/material/colors";
 
-// Helper: decode HTML entities from Open Trivia DB (like &quot;, &#039;)
+// Decode HTML entities from trivia API
 const decodeHtml = (html: string) => {
   const txt = document.createElement("textarea");
   txt.innerHTML = html;
   return txt.value;
 };
 
-// Helper: shuffle the options randomly
+// Shuffle array (answers)
 const shuffleArray = (array: string[]) => {
   return [...array].sort(() => Math.random() - 0.5);
 };
@@ -26,17 +25,19 @@ const TriviaPage: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [score, setScore] = useState(0);
+  const [showPopup, setShowPopup] = useState(false);
 
+  // ✅ Always fetch on mount (hook runs once)
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        console.log("🎯 Fetching trivia from backend...");
-        const res = await axios.get("http://localhost:3001/api/trivia");
-        console.log("✅ Response:", res.data);
-        if (res.data.success && res.data.data.length > 0) {
+        console.log("🎯 Fetching trivia questions from backend...");
+        const res = await axios.get("http://localhost:3001/api/trivia?category=Computer%20Science");
+        if (res.data.success && Array.isArray(res.data.data)) {
           setQuestions(res.data.data);
         } else {
-          console.warn("⚠️ No questions received:", res.data);
+          console.warn("⚠️ Unexpected response:", res.data);
         }
       } catch (err) {
         console.error("❌ Error fetching trivia:", err);
@@ -44,9 +45,42 @@ const TriviaPage: React.FC = () => {
         setLoading(false);
       }
     };
+
     fetchQuestions();
   }, []);
 
+  // ✅ Prevent using hooks conditionally
+  const hasQuestions = questions.length > 0;
+  const currentQuestion = hasQuestions ? questions[currentIndex] : null;
+
+  // ✅ Stable memo hook (no conditional execution)
+  const options = useMemo(() => {
+    if (!currentQuestion) return [];
+    return shuffleArray([
+      currentQuestion.correct_answer,
+      ...currentQuestion.incorrect_answers,
+    ]);
+  }, [currentQuestion]);
+
+  // ✅ Handle option click
+  const handleAnswerSelect = (option: string) => {
+    setSelectedOption(option);
+    if (option === currentQuestion?.correct_answer) {
+      setScore((prev) => prev + 1);
+    }
+  };
+
+  // ✅ Move to next or finish
+  const handleNext = () => {
+    if (currentIndex + 1 < questions.length) {
+      setCurrentIndex((prev) => prev + 1);
+      setSelectedOption(null);
+    } else {
+      setShowPopup(true);
+    }
+  };
+
+  // ✅ Display loading screen
   if (loading) {
     return (
       <Box
@@ -64,7 +98,8 @@ const TriviaPage: React.FC = () => {
     );
   }
 
-  if (questions.length === 0) {
+  // ✅ Handle case with no data
+  if (!hasQuestions || !currentQuestion) {
     return (
       <Box
         sx={{
@@ -83,40 +118,29 @@ const TriviaPage: React.FC = () => {
     );
   }
 
-  const currentQuestion = questions[currentIndex];
-  const options = shuffleArray([
-    currentQuestion.correct_answer,
-    ...currentQuestion.incorrect_answers,
-  ]);
-
+  // ✅ Main UI
   return (
     <Box
       sx={{
+        position: "fixed",
         top: 0,
         right: 0,
-        position: "fixed",
         width: "100%",
         height: "100vh",
-        margin: 0,
         background: "radial-gradient(circle at center, #03045E 0%, #000 100%)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         color: "#fff",
-        padding: 0,
-        overflow: "hidden",
       }}
     >
       {/* Header */}
-      <Typography
-        variant="h4"
-        sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 3 }}
-      >
+      <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 3 }}>
         Trivia Arena ⚡
       </Typography>
-  
-      {/* Progress Bar */}
+
+      {/* Progress */}
       <Box sx={{ width: "80%", maxWidth: 600, mb: 3 }}>
         <LinearProgress
           variant="determinate"
@@ -129,8 +153,8 @@ const TriviaPage: React.FC = () => {
           }}
         />
       </Box>
-  
-      {/* Question Card */}
+
+      {/* Question */}
       <Paper
         sx={{
           width: "80%",
@@ -154,45 +178,39 @@ const TriviaPage: React.FC = () => {
         >
           {decodeHtml(currentQuestion.question)}
         </Typography>
-  
-        {options.map((option) => (
-    <Button
-      key={option}
-      onClick={() => setSelectedOption(option)}
-        variant="outlined"
-        sx={{
-          mb: 2,
-          width: "100%",
-          border: "2px solid #4CC9F0",   
-          color: "#4CC9F0",              
-          backgroundColor: blue, 
-          fontWeight: "bold",
-          textTransform: "none",
-          "&:hover": {
-            backgroundColor: "rgba(76, 201, 240, 0.15)", 
-          },
-          "&:focus": { outline: "none" },
-          "&:active": {
-            backgroundColor: "rgba(76, 201, 240, 0.15)", 
-            transform: "none", 
-          },
-          transition: "none",
-        }}
-      >
-        {decodeHtml(option)}
-      </Button>
-    ))}
 
-      
+        {options.map((option) => (
+          <Button
+            key={option}
+            onClick={() => handleAnswerSelect(option)}
+            disableElevation
+            sx={{
+              mb: 2,
+              width: "100%",
+              height: 56,
+              border: "2px solid #4CC9F0",
+              backgroundColor:
+                selectedOption === option ? "#4CC9F0" : "transparent",
+              color: selectedOption === option ? "#000" : "#4CC9F0",
+              fontWeight: "bold",
+              fontSize: "1rem",
+              textTransform: "none",
+              transition: "background-color 0.2s, color 0.2s",
+              "&:hover": {
+                backgroundColor: "#4CC9F0",
+                color: "#000",
+              },
+            }}
+          >
+            {decodeHtml(option)}
+          </Button>
+        ))}
       </Paper>
-  
-      {/* Next Question Button */}
+
+      {/* Next Button */}
       <Button
         variant="contained"
-        onClick={() => {
-          setSelectedOption(null);
-          setCurrentIndex((prev) => (prev + 1) % questions.length);
-        }}
+        onClick={handleNext}
         sx={{
           mt: 4,
           px: 4,
@@ -203,11 +221,61 @@ const TriviaPage: React.FC = () => {
           fontWeight: "bold",
         }}
       >
-        Next Question →
+        {currentIndex + 1 < questions.length ? "Next Question →" : "See Results"}
       </Button>
+
+      {/* Popup */}
+      {showPopup && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.7)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Paper
+            sx={{
+              width: 350,
+              p: 4,
+              background: "linear-gradient(180deg, #001233 0%, #03045E 100%)",
+              textAlign: "center",
+              color: "#fff",
+              borderRadius: 4,
+              boxShadow: "0 0 30px rgba(76, 201, 240, 0.5)",
+            }}
+          >
+            <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 2 }}>
+              🎯 Results
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 1 }}>
+              Score: {score} / {questions.length}
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3, color: "#A0A0A0" }}>
+              Great job! Keep improving ⚡
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#7209B7",
+                "&:hover": { backgroundColor: "#560BAD" },
+                borderRadius: "25px",
+                px: 4,
+              }}
+              onClick={() => window.location.reload()}
+            >
+              Continue
+            </Button>
+          </Paper>
+        </Box>
+      )}
     </Box>
   );
-  
 };
 
 export default TriviaPage;
