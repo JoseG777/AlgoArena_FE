@@ -46,7 +46,7 @@ const BattleRoom: React.FC = () => {
 
   const [room, setRoom] = useState<RoomDTO | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [members, setMembers] = useState<string[]>([]);
+  const [members, setMembers] = useState<{ username: string; score: number }[]>([]);
 
   const [language, setLanguage] = useState<Lang>(initialLang);
   const [source, setSource] = useState<string>("");
@@ -100,7 +100,11 @@ const BattleRoom: React.FC = () => {
       navigate("/dash-board", { replace: true });
     };
     const onUserJoined = (p: { username: string }) => {
-      setMembers((prev) => (prev.includes(p.username) ? prev : [...prev, p.username]));
+      setMembers((prev) => (prev.some((m) => m.username === p.username) ? prev : [...prev, { username: p.username, score: 0 }]));
+    };
+
+    const onMembersUpdated = (updatedMembers: { username: string; score: number }[]) => {
+      setMembers(updatedMembers);
     };
 
     socket.emit(
@@ -118,7 +122,10 @@ const BattleRoom: React.FC = () => {
           return;
         }
         joinedRef.current = res.roomCode!;
-        setMembers(res.members ?? []);
+        setMembers(res.members?.map((username) => ({
+          username,
+          score: 0,
+        })) ?? []);
         if (typeof res.timeLeft === "number") setTimeLeft(res.timeLeft);
       }
     );
@@ -126,11 +133,13 @@ const BattleRoom: React.FC = () => {
     socket.on("timerUpdate", onTimerUpdate);
     socket.on("roomClosed", onRoomClosed);
     socket.on("userJoined", onUserJoined);
+    socket.on("membersUpdated", onMembersUpdated);
 
     return () => {
       socket.off("timerUpdate", onTimerUpdate);
       socket.off("roomClosed", onRoomClosed);
       socket.off("userJoined", onUserJoined);
+      socket.off("membersUpdated", onMembersUpdated);
       if (joinedRef.current) {
         socket.emit("leaveRoom", joinedRef.current);
         joinedRef.current = "";
@@ -180,6 +189,9 @@ const BattleRoom: React.FC = () => {
       setStderr(d.stderr || "");
       setCompileOutput(d.compile_output || "");
       setScore(typeof d.score === "number" ? d.score : null);
+      if (typeof d.score === "number") {
+        socket.emit('updateScore', room.code, d.score);
+      }
     } catch (e: any) {
       setErrorMsg(e?.message || "Network error");
     }
@@ -201,7 +213,17 @@ const BattleRoom: React.FC = () => {
       <div style={{ color: "#aaa", marginBottom: 8 }}>
         Room: <strong>{room.code}</strong> · Problem: <strong>{room.problem.title}</strong> (
         {room.problem.problemId}) · Difficulty: <strong>{room.problem.difficulty}</strong> · Time
-        left: <strong>{timeLeft ?? "—"}</strong>s
+        left: <strong>{timeLeft ?? "—"}</strong>s · Members:{" "}
+        {members.length > 0 ? (
+          members.map((member, i) => (
+            <span key={member.username}>
+              {member.username} (Score: {member.score})
+              {i < members.length - 1 && " · "}
+            </span>
+          ))
+        ) : (
+          <span>No members yet</span>
+        )}
       </div>
 
       <div className="aa-row">
