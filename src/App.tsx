@@ -8,10 +8,10 @@ import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import AuthRoom from "./views/AuthRoom";
 import SendFriendRequest from "./views/SendFriendRequest";
 import SeeFriendRequests from "./views/SeeFriendRequests";
-import SeeFriends from "./views/SeeFriends";
 import Dashboard from "./views/Dashboard";
 import TriviaPage from "./views/TriviaPage";
 import "./App.css";
+import FriendSystem from "./api/friendSystem";
 
 function App() {
   return (
@@ -93,7 +93,7 @@ function App() {
           path="/friends"
           element={
             <ProtectedRoute>
-              <SeeFriends />
+              <FriendSystem />
             </ProtectedRoute>
           }
         />
