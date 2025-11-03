@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
     try {
       const allowUsername = findSelectedFriendUsername();
       const durationSec = selectedDurationMin * 60;
-      const difficulty = selectedDifficulty; 
+      const difficulty = selectedDifficulty;
 
       const res = await fetch("http://localhost:3001/rooms", {
         method: "POST",

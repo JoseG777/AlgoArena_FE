@@ -1,4 +1,3 @@
-// src/pages/SeeFriendRequests.tsx
 import { useEffect, useState } from "react";
 
 type FriendRequest = {

@@ -137,10 +137,11 @@ const BattleRoom: React.FC = () => {
         joinedRef.current = res.roomCode!;
 
         setMembers((prev) => {
-          const initialMembers = res.members?.map((username) => ({
-            username,
-            score: prev.find((m) => m.username === username)?.score ?? 0,
-          })) ?? [];
+          const initialMembers =
+            res.members?.map((username) => ({
+              username,
+              score: prev.find((m) => m.username === username)?.score ?? 0,
+            })) ?? [];
           return initialMembers;
         });
 
@@ -230,8 +231,7 @@ const BattleRoom: React.FC = () => {
         {members.length > 0 ? (
           members.map((member, i) => (
             <span key={member.username}>
-              {member.username} (Score: {member.score})
-              {i < members.length - 1 && " · "}
+              {member.username} (Score: {member.score}){i < members.length - 1 && " · "}
             </span>
           ))
         ) : (

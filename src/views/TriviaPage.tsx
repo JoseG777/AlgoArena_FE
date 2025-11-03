@@ -1,4 +1,4 @@
-import {Box, Button, Typography, Paper, LinearProgress, CircularProgress,} from "@mui/material";
+import { Box, Button, Typography, Paper, LinearProgress, CircularProgress } from "@mui/material";
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 
@@ -55,10 +55,7 @@ const TriviaPage: React.FC = () => {
   // ✅ Stable memo hook (no conditional execution)
   const options = useMemo(() => {
     if (!currentQuestion) return [];
-    return shuffleArray([
-      currentQuestion.correct_answer,
-      ...currentQuestion.incorrect_answers,
-    ]);
+    return shuffleArray([currentQuestion.correct_answer, ...currentQuestion.incorrect_answers]);
   }, [currentQuestion]);
 
   // ✅ Handle option click
@@ -188,8 +185,7 @@ const TriviaPage: React.FC = () => {
               width: "100%",
               height: 56,
               border: "2px solid #4CC9F0",
-              backgroundColor:
-                selectedOption === option ? "#4CC9F0" : "transparent",
+              backgroundColor: selectedOption === option ? "#4CC9F0" : "transparent",
               color: selectedOption === option ? "#000" : "#4CC9F0",
               fontWeight: "bold",
               fontSize: "1rem",

@@ -1,0 +1,245 @@
+.friend-system-page {
+  background: linear-gradient(180deg, #0b132b, #1c2541);
+  min-height: 100vh;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+}
+
+/* Container for the entire Friend System page */
+.friend-system-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.tab-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 25px 0;
+}
+
+.tab-btn {
+  background-color: #243b55;
+  color: #cfd6e2;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.tab-btn:hover {
+  background-color: #2a4a68;
+  color: #fff;
+}
+
+.active-tab {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.tab-content {
+  background: rgba(20, 30, 60, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  max-width: 800px;
+  margin: 30px auto;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.tab-content:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.friends-container {
+  justify-content: flex-start;
+  gap: 25px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.friend-search {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1b2a4a;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  margin-bottom: 25px;
+}
+
+.friend-search::placeholder {
+  color: #9ca3af;
+}
+
+/* Friend list container */
+.friends-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Individual friend card */
+.friend-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #243b55;
+  padding: 12px 18px;
+  border-radius: 12px;
+  transition: background-color 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.friend-card:hover {
+  background-color: #2a4a68;
+  box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+}
+
+.friend-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.friend-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+}
+
+.friend-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.challenge-btn {
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.challenge-btn:hover {
+  background-color: #0056b3;
+}
+
+.refresh-btn {
+  margin-top: 30px;
+  background-color: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.refresh-btn:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.no-friends {
+  color: #9ca3af;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.error-text {
+  color: red;
+  margin-bottom: 10px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1b2a4a;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #007bff;
+}
+
+.clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.friend-popup {
+  position: absolute;
+  background-color: #243b55;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  right: 30px;
+  margin-top: 45px;
+  z-index: 10;
+  animation: fadeIn 0.2s ease;
+}
+
+.friend-popup .remove-btn {
+  background: transparent;
+  border: none;
+  color: #ff6666;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.friend-popup .remove-btn:hover {
+  color: #ff3333;
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 30px 0 10px 0;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
+}
+.page-title::after {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 3px;
+  background-color: linear-gradient(90deg, #007bff, #00c6ff);
+  margin: 12px auto 0;
+  border-radius: 2px;
+}
