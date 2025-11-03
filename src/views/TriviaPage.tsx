@@ -32,7 +32,7 @@ const TriviaPage: React.FC = () => {
     const fetchQuestions = async () => {
       try {
         console.log("🎯 Fetching trivia questions from backend...");
-        const res = await axios.get("http://localhost:3001/api/trivia?category=Computer%20Science");
+        const res = await axios.get("http://localhost:3001/trivia?category=Computer%20Science");
         if (res.data.success && Array.isArray(res.data.data)) {
           setQuestions(res.data.data);
         } else {
