@@ -6,8 +6,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import Dashboard from "./views/Dashboard";
 import TriviaPage from "./views/TriviaPage";
-import BattleRoom from "./views/BattleRoom";
-import FriendsPage from "./views/FriendsPage";
+import BattleRoom from "./views/BattleRoom/BattleRoom";
+import FriendsPage from "./views/FriendsPage/FriendsPage";
 import "./App.css";
 
 function App() {

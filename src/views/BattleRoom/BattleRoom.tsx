@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
-import { socket } from "../lib/socket";
-import "./Arena/Arena.css";
+import { socket } from "../../lib/socket";
+import "./BattleRoom.css";
 
 type Lang = "typescript" | "python";
 const LANGUAGE_IDS: Record<Lang, number> = { typescript: 74, python: 71 };

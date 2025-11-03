@@ -243,3 +243,26 @@
   margin: 12px auto 0;
   border-radius: 2px;
 }
+
+.kebab-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(36, 59, 85, 0.9);
+  color: #cfd6e2;
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+}
+.kebab-btn:hover {
+  background: #2a4a68;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(0, 123, 255, 0.25);
+}
+
+.friend-actions .challenge-btn {
+  margin-right: 4px;
+}

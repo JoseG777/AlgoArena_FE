@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import "../views/FriendsPage.css";
+import { useEffect, useRef, useState } from "react";
+import "../views/FriendsPage/FriendsPage.css";
 
 type Friend = {
   id: string;
@@ -9,13 +9,11 @@ type Friend = {
 
 export default function SeeFriends() {
   const [friends, setFriends] = useState<Friend[]>([]);
-  // const [error, setError] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
-  // const [loading, setLoading] = useState(false);
-  // const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const popupRef = useRef<HTMLDivElement | null>(null);
 
   async function fetchFriends() {
-    // setError("");
     try {
       const res = await fetch("http://localhost:3001/friends", {
         credentials: "include",
@@ -23,17 +21,12 @@ export default function SeeFriends() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load friends");
       setFriends(data);
-      console.log(data);
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
-      // setError(e.message || "Network error");
-    } finally {
-      // setLoading(false);
     }
   }
 
   async function removeFriend(username: string) {
-    // setError("");
     setBusy(username);
     try {
       const res = await fetch(`http://localhost:3001/friends/${encodeURIComponent(username)}`, {
@@ -42,25 +35,42 @@ export default function SeeFriends() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to remove friend");
-
       setFriends((prev) => prev.filter((f) => f.username !== username));
-    } catch (e: any) {
+      setActiveMenu(null);
+    } catch (e) {
       console.error(e);
-      // setError(e.message || "Network error");
     } finally {
       setBusy(null);
     }
   }
 
-  // function confirmAndRemove(username: string) {
-  //   const ok = window.confirm(`Are you sure you want to remove @${username} from your friends?`);
-  //   if (!ok) return;
-  //   removeFriend(username);
-  // }
+  function confirmAndRemove(username: string) {
+    const ok = window.confirm(`Are you sure you want to remove @${username} from your friends?`);
+    if (!ok) return;              // keep the kebab open if cancelled; closes on outside click
+    removeFriend(username);       // proceed if confirmed
+  }
 
   function handleChallenge(username: string) {
-    alert(`Challenge sent to @${username}!`);
+    alert(`Challenge sent to @${username}! (Logic TBI)`);
   }
+
+  // Close menu on outside click or Escape
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (!popupRef.current) return;
+      if (!(e.target instanceof Node)) return;
+      if (!popupRef.current.contains(e.target)) setActiveMenu(null);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setActiveMenu(null);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
   useEffect(() => {
     fetchFriends();
@@ -76,26 +86,61 @@ export default function SeeFriends() {
         {friends.length === 0 ? (
           <p className="no-friends">No friends yet.</p>
         ) : (
-          friends.map((f) => (
-            <div className="friend-card" key={f.id}>
-              <div className="friend-info">
-                <img
-                  src={`https://ui-avatars.com/api/?name=${f.username}&background=007bff&color=fff`}
-                  alt={f.username}
-                  className="friend-avatar"
-                />
-                <span className="friend-name">{f.username}</span>
-              </div>
+          friends.map((f) => {
+            const isBusy = busy === f.username;
+            const isOpen = activeMenu === f.username;
+            return (
+              <div className="friend-card" key={f.id}>
+                <div className="friend-info">
+                  <img
+                    src={`https://ui-avatars.com/api/?name=${f.username}&background=007bff&color=fff`}
+                    alt={f.username}
+                    className="friend-avatar"
+                  />
+                <span className="friend-name">@{f.username}</span>
+                </div>
 
-              <button
-                className="challenge-btn"
-                onClick={() => handleChallenge(f.username)}
-                disabled={busy === f.username}
-              >
-                {busy === f.username ? "Removing..." : "CHALLENGE"}
-              </button>
-            </div>
-          ))
+                <div
+                  className="friend-actions"
+                  style={{ display: "flex", alignItems: "center", gap: 8, position: "relative" }}
+                >
+                  <button
+                    className="challenge-btn"
+                    onClick={() => handleChallenge(f.username)}
+                    disabled={isBusy}
+                  >
+                    {isBusy ? "Working..." : "CHALLENGE"}
+                  </button>
+
+                  {/* kebab menu */}
+                  <button
+                    type="button"
+                    className="kebab-btn clickable"
+                    aria-haspopup="menu"
+                    aria-expanded={isOpen}
+                    title="More actions"
+                    onClick={() => setActiveMenu((cur) => (cur === f.username ? null : f.username))}
+                  >
+                    ⋯
+                  </button>
+
+                  {/* popup menu */}
+                  {isOpen && (
+                    <div ref={popupRef} className="friend-popup" role="menu">
+                      <button
+                        className="remove-btn"
+                        onClick={() => confirmAndRemove(f.username)}
+                        disabled={isBusy}
+                        role="menuitem"
+                      >
+                        {isBusy ? "Removing..." : "Remove Friend"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
 

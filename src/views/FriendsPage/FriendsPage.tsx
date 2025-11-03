@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Box } from "@mui/material";
-import NavBar from "../components/NavBar";
-import SeeFriends from "../components/SeeFriends";
-import SeeFriendRequests from "../components/SeeFriendRequests";
-import SendFriendRequest from "../components/SendFriendRequest";
-import AlgorithmVortex from "../components/AlgorithmVortex";
+import NavBar from "../../components/NavBar";
+import SeeFriends from "../../components/SeeFriends";
+import SeeFriendRequests from "../../components/SeeFriendRequests";
+import SendFriendRequest from "../../components/SendFriendRequest";
+import AlgorithmVortex from "../../components/AlgorithmVortex";
 import "./FriendsPage.css";
 
 export default function FriendsPage() {
