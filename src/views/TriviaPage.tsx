@@ -181,17 +181,6 @@ const TriviaPage: React.FC = () => {
         {options.map((option) => (
           <Button
             key={option}
-<<<<<<< HEAD
-            variant="outlined"
-            onClick={() => setSelectedOption(option)}
-            sx={{
-              mb: 2,
-              width: "100%",
-              color: selectedOption === option ? "#000" : "#4CC9F0",
-              backgroundColor: selectedOption === option ? "#4CC9F0" : "transparent",
-              borderColor: "#4CC9F0",
-              fontWeight: "bold",
-=======
             onClick={() => handleAnswerSelect(option)}
             disableElevation
             sx={{
@@ -206,32 +195,21 @@ const TriviaPage: React.FC = () => {
               fontSize: "1rem",
               textTransform: "none",
               transition: "background-color 0.2s, color 0.2s",
->>>>>>> f39c458ca58796202317804e47d1406c153defc7
               "&:hover": {
                 backgroundColor: "#4CC9F0",
                 color: "#000",
               },
             }}
           >
-<<<<<<< HEAD
-            {option}
-=======
             {decodeHtml(option)}
->>>>>>> f39c458ca58796202317804e47d1406c153defc7
           </Button>
         ))}
       </Paper>
 
-<<<<<<< HEAD
-      {/* Next Question Button */}
-      <Button
-        variant="contained"
-=======
       {/* Next Button */}
       <Button
         variant="contained"
         onClick={handleNext}
->>>>>>> f39c458ca58796202317804e47d1406c153defc7
         sx={{
           mt: 4,
           px: 4,
@@ -242,13 +220,6 @@ const TriviaPage: React.FC = () => {
           fontWeight: "bold",
         }}
       >
-<<<<<<< HEAD
-        Next question →
-      </Button>
-    </Box>
-  );
-};
-=======
         {currentIndex + 1 < questions.length ? "Next Question →" : "See Results"}
       </Button>
 
@@ -306,5 +277,4 @@ const TriviaPage: React.FC = () => {
   );
 };
 
->>>>>>> f39c458ca58796202317804e47d1406c153defc7
 export default TriviaPage;
