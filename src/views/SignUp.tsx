@@ -295,7 +295,7 @@ const SignUp: React.FC = () => {
         </Box>
         <Typography sx={{ textAlign: "center", fontSize: "0.75rem", color: "#6B7280", mt: 4 }}>
           Already have an account?{" "}
-          <a href="#" style={{ color: "#60A5FA", textDecoration: "none" }}>
+          <a href="/sign-in" style={{ color: "#60A5FA", textDecoration: "none" }}>
             Log In
           </a>
         </Typography>
