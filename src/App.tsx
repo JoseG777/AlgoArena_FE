@@ -10,8 +10,6 @@ import "./App.css";
 import Dashboard from "./views/Dashboard";
 import TriviaPage from './views/TriviaPage';
 
-
-
 function App() {
   return (
     <BrowserRouter>
@@ -76,6 +74,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/trivia" element={<TriviaPage/>} />
+        
       </Routes>
     </BrowserRouter>
   );
