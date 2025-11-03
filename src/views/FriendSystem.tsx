@@ -1,16 +1,14 @@
 import { useState } from "react";
-import { Box } from "@mui/material"; 
+import { Box } from "@mui/material";
 import NavBar from "../components/NavBar";
-import SeeFriends from "../views/SeeFriends";
-import SeeFriendRequests from "../views/SeeFriendRequests";
-import SendFriendRequest from "../views/SendFriendRequest";
+import SeeFriends from "../components/SeeFriends";
+import SeeFriendRequests from "../components/SeeFriendRequests";
+import SendFriendRequest from "../components/SendFriendRequest";
 import AlgorithmVortex from "../components/AlgorithmVortex";
-import "../FriendsPage.css";
+import "./FriendsPage.css";
 
 export default function FriendSystem() {
-  const [activeTab, setActiveTab] = useState<"friends" | "requests" | "send">(
-    "friends"
-  );
+  const [activeTab, setActiveTab] = useState<"friends" | "requests" | "send">("friends");
 
   return (
     <Box
@@ -30,12 +28,10 @@ export default function FriendSystem() {
         zindex: 1,
       }}
     >
-      
       <Box sx={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
         <AlgorithmVortex />
       </Box>
 
-     
       <Box
         sx={{
           paddingTop: "165px",
@@ -51,7 +47,6 @@ export default function FriendSystem() {
         <NavBar />
         <h1 className="page-title">Friend System</h1>
 
-        
         <div className="tab-container">
           <button
             className={`tab-btn ${activeTab === "friends" ? "active-tab" : ""}`}

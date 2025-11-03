@@ -17,7 +17,7 @@ export default function SeeFriendRequests() {
   async function fetchIncoming() {
     setError("");
     try {
-      const res = await fetch("http://localhost:3001/api/friend-requests/incoming?status=pending", {
+      const res = await fetch("http://localhost:3001/friend-requests/incoming?status=pending", {
         credentials: "include",
       });
       const data = await res.json();
@@ -33,7 +33,7 @@ export default function SeeFriendRequests() {
     setBusyId(id);
     setError("");
     try {
-      const res = await fetch(`http://localhost:3001/api/friend-requests/${id}/accept`, {
+      const res = await fetch(`http://localhost:3001/friend-requests/${id}/accept`, {
         method: "POST",
         credentials: "include",
       });
@@ -52,7 +52,7 @@ export default function SeeFriendRequests() {
     setBusyId(id);
     setError("");
     try {
-      const res = await fetch(`http://localhost:3001/api/friend-requests/${id}/reject`, {
+      const res = await fetch(`http://localhost:3001/friend-requests/${id}/reject`, {
         method: "POST",
         credentials: "include",
       });
