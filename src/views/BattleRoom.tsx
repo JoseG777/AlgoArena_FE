@@ -100,12 +100,25 @@ const BattleRoom: React.FC = () => {
       navigate("/dash-board", { replace: true });
     };
     const onUserJoined = (p: { username: string }) => {
-      setMembers((prev) => (prev.some((m) => m.username === p.username) ? prev : [...prev, { username: p.username, score: 0 }]));
+      setMembers((prev) => {
+        if (prev.some((m) => m.username === p.username)) return prev;
+        return [...prev, { username: p.username, score: 0 }];
+      });
     };
 
     const onMembersUpdated = (updatedMembers: { username: string; score: number }[]) => {
-      setMembers(updatedMembers);
+      setMembers((prev) => {
+        const map = new Map<string, { username: string; score: number }>();
+        for (const m of prev) map.set(m.username, m);
+        for (const m of updatedMembers) map.set(m.username, m);
+        return Array.from(map.values());
+      });
     };
+
+    socket.on("timerUpdate", onTimerUpdate);
+    socket.on("roomClosed", onRoomClosed);
+    socket.on("userJoined", onUserJoined);
+    socket.on("membersUpdated", onMembersUpdated);
 
     socket.emit(
       "joinRoom",
@@ -122,18 +135,18 @@ const BattleRoom: React.FC = () => {
           return;
         }
         joinedRef.current = res.roomCode!;
-        setMembers(res.members?.map((username) => ({
-          username,
-          score: 0,
-        })) ?? []);
+
+        setMembers((prev) => {
+          const initialMembers = res.members?.map((username) => ({
+            username,
+            score: prev.find((m) => m.username === username)?.score ?? 0,
+          })) ?? [];
+          return initialMembers;
+        });
+
         if (typeof res.timeLeft === "number") setTimeLeft(res.timeLeft);
       }
     );
-
-    socket.on("timerUpdate", onTimerUpdate);
-    socket.on("roomClosed", onRoomClosed);
-    socket.on("userJoined", onUserJoined);
-    socket.on("membersUpdated", onMembersUpdated);
 
     return () => {
       socket.off("timerUpdate", onTimerUpdate);
@@ -190,7 +203,7 @@ const BattleRoom: React.FC = () => {
       setCompileOutput(d.compile_output || "");
       setScore(typeof d.score === "number" ? d.score : null);
       if (typeof d.score === "number") {
-        socket.emit('updateScore', room.code, d.score);
+        socket.emit("updateScore", room.code, d.score);
       }
     } catch (e: any) {
       setErrorMsg(e?.message || "Network error");
