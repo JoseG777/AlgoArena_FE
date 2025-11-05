@@ -222,7 +222,7 @@ const BattleRoom: React.FC = () => {
 
   return (
     <div className="aa-root">
-      <h1 className="aa-title">AlgoArena Editor</h1>
+      <h1 className="aa-title">Battle Room</h1>
 
       <div style={{ color: "#aaa", marginBottom: 8 }}>
         Room: <strong>{room.code}</strong> · Problem: <strong>{room.problem.title}</strong> (

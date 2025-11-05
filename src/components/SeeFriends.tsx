@@ -46,8 +46,8 @@ export default function SeeFriends() {
 
   function confirmAndRemove(username: string) {
     const ok = window.confirm(`Are you sure you want to remove @${username} from your friends?`);
-    if (!ok) return;              // keep the kebab open if cancelled; closes on outside click
-    removeFriend(username);       // proceed if confirmed
+    if (!ok) return; // keep the kebab open if cancelled; closes on outside click
+    removeFriend(username); // proceed if confirmed
   }
 
   function handleChallenge(username: string) {
@@ -97,7 +97,7 @@ export default function SeeFriends() {
                     alt={f.username}
                     className="friend-avatar"
                   />
-                <span className="friend-name">@{f.username}</span>
+                  <span className="friend-name">@{f.username}</span>
                 </div>
 
                 <div
