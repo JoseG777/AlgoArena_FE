@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
+import NavBar from "../../components/NavBar";
 
 type StatsItem = {
   id: string;
   startedAt: string;
   opponentUsername: string | null;
   points: number;
-  result: 'win'|'loss'|'tie';
+  result: "win" | "loss" | "tie";
 };
 
 type StatsResponse = {
@@ -15,20 +16,20 @@ type StatsResponse = {
 
 const StatsPage: React.FC = () => {
   const [data, setData] = useState<StatsResponse | null>(null);
-  const [err, setErr] = useState<string>('');
+  const [err, setErr] = useState<string>("");
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('http://localhost:3001/me/matches', { credentials: 'include' });
+        const res = await fetch("http://localhost:3001/me/matches", { credentials: "include" });
         if (!res.ok) {
           const e = await res.json().catch(() => ({}));
-          throw new Error(e?.error || 'Failed to load Stats');
+          throw new Error(e?.error || "Failed to load Stats");
         }
         const json: StatsResponse = await res.json();
         setData(json);
       } catch (e: any) {
-        setErr(e?.message || 'Error');
+        setErr(e?.message || "Error");
       }
     })();
   }, []);
@@ -37,17 +38,21 @@ const StatsPage: React.FC = () => {
   if (!data) return <div>Loading…</div>;
 
   return (
-    <div style={{ padding: 16 }}>
-      <h2>Your Points: {data.totalPoints}</h2>
-      <h3>Match Stats</h3>
-      <ul>
-        {data.matches.map(m => (
-          <li key={m.id}>
-            {new Date(m.startedAt).toLocaleDateString()} — vs {m.opponentUsername ?? '—'} — {m.points} pts — {m.result}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <NavBar />
+      <div style={{ padding: 16 }}>
+        <h2>Your Points: {data.totalPoints}</h2>
+        <h3>Match Stats</h3>
+        <ul>
+          {data.matches.map((m) => (
+            <li key={m.id}>
+              {new Date(m.startedAt).toLocaleDateString()} — vs {m.opponentUsername ?? "—"} —{" "}
+              {m.points} pts — {m.result}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 };
 

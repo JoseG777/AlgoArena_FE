@@ -11,8 +11,14 @@
   box-sizing: border-box;
   background: radial-gradient(circle at 10% 10%, #001233 0%, #03021a 35%, #000000 100%);
   color: #e6f6ff;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  overflow: hidden; 
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
+  overflow: hidden;
 }
 
 /* Title */
@@ -74,7 +80,9 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(76, 201, 240, 0.06);
-  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6), 0 6px 30px rgba(60, 120, 160, 0.03);
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.6),
+    0 6px 30px rgba(60, 120, 160, 0.03);
 }
 
 /* Side panel */
