@@ -12,6 +12,7 @@ type ProblemDTO = {
   title: string;
   difficulty: "easy" | "medium" | "hard";
   startingCode: Record<Lang, string>;
+  problemDescription: string;
 };
 
 type RoomDTO = {
@@ -50,6 +51,7 @@ const BattleRoom: React.FC = () => {
 
   const [language, setLanguage] = useState<Lang>(initialLang);
   const [source, setSource] = useState<string>("");
+  const [showDesc, setShowDesc] = useState<boolean>(false);
 
   const [status, setStatus] = useState<string>("");
   const [stdout, setStdout] = useState<string>("");
@@ -73,6 +75,7 @@ const BattleRoom: React.FC = () => {
           return;
         }
         const data: RoomDTO = await res.json();
+        console.log(data.problem.problemDescription);
         if (aborted) return;
 
         setRoom(data);
@@ -241,7 +244,7 @@ const BattleRoom: React.FC = () => {
 
       <div className="aa-row">
         <div className="aa-card">
-          <div className="aa-control-row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <div className="aa-control-row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <div>
               <label className="aa-label" style={{ marginRight: 6 }}>
                 Language:
@@ -255,7 +258,50 @@ const BattleRoom: React.FC = () => {
                 <option value="python">Python</option>
               </select>
             </div>
+
+            {/* Problem description toggle */}
+            <div>
+              <button
+                onClick={() => setShowDesc((s) => !s)}
+                aria-expanded={showDesc}
+                aria-controls="aa-problem-desc"
+                style={{
+                  marginLeft: 8,
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  background: "rgba(255,255,255,0.02)",
+                  color: "#e6f6ff",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                {showDesc ? "Hide Problem" : "Show Problem"}
+              </button>
+            </div>
           </div>
+
+          {/* Collapsible problem description (keeps original design, shown above editor) */}
+          {showDesc && (
+            <div
+              id="aa-problem-desc"
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(76, 201, 240, 0.04)",
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 10,
+                maxHeight: 280,
+                overflow: "auto",
+                color: "#e6f6ff",
+                whiteSpace: "pre-wrap",
+                lineHeight: 1.5,
+              }}
+            >
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>{room.problem.title}</div>
+              <div style={{ color: "#d6f6ff" }}>{room.problem.problemDescription}</div>
+            </div>
+          )}
 
           <Editor
             className="aa-editor"
