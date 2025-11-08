@@ -1,13 +1,24 @@
-import React from "react";
 import { Box, Button, Grid } from "@mui/material";
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 import NavBar from "../components/NavBar";
 import { useNavigate, Link } from "react-router-dom";
+import ChallengeModal from "../components/ChallengeModal";
+import React, { useState } from "react";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [openChallenge, setOpenChallenge] = useState(false);
+
+  const handleStartChallenge = (config: {
+    opponentUsername: string;
+    difficulty: "easy" | "medium" | "hard";
+    durationMin: number;
+  }) => {
+    console.log("Challenge config:", config);
+    setOpenChallenge(false);
+  };
 
   return (
     <Box
@@ -45,7 +56,7 @@ const Dashboard: React.FC = () => {
           <Grid item>
             <Button
               variant="contained"
-              onClick={() => navigate("/test-judge")}
+              onClick={() => setOpenChallenge(true)}
               sx={{
                 width: { xs: 480, sm: 480 },
                 height: { xs: 450, sm: 350 },
@@ -114,6 +125,11 @@ const Dashboard: React.FC = () => {
           <Link to="/auth-room">CREATE ROOM</Link>
         </Button>
       </Box>
+      <ChallengeModal
+        open={openChallenge}
+        onClose={() => setOpenChallenge(false)}
+        onConfirm={handleStartChallenge}
+      />
     </Box>
   );
 };

@@ -1,4 +1,3 @@
-
 .friend-system-page {
   background: linear-gradient(180deg, #0b132b, #1c2541);
   min-height: 100vh;
@@ -14,7 +13,6 @@
   padding: 60px 20px;
   text-align: center;
 }
-
 
 .tab-container {
   display: flex;
@@ -44,9 +42,8 @@
   color: #fff;
 }
 
-
 .tab-content {
-    background: rgba(20, 30, 60, 0.55);
+  background: rgba(20, 30, 60, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
   border-radius: 16px;
@@ -54,7 +51,9 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   max-width: 800px;
   margin: 30px auto;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .tab-content:hover {
@@ -62,16 +61,14 @@
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
 }
 
-
 .friends-container {
- justify-content: flex-start;
-  gap: 25px; 
+  justify-content: flex-start;
+  gap: 25px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
 
 .friend-search {
   width: 100%;
@@ -113,9 +110,8 @@
 
 .friend-card:hover {
   background-color: #2a4a68;
-   box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
 }
-
 
 .friend-info {
   display: flex;
@@ -134,7 +130,6 @@
   font-weight: 600;
 }
 
-
 .challenge-btn {
   background-color: #007bff;
   color: white;
@@ -149,7 +144,6 @@
 .challenge-btn:hover {
   background-color: #0056b3;
 }
-
 
 .refresh-btn {
   margin-top: 30px;
@@ -167,19 +161,16 @@
   color: white;
 }
 
-
 .no-friends {
   color: #9ca3af;
   text-align: center;
   margin-top: 20px;
 }
 
-
 .error-text {
   color: red;
   margin-bottom: 10px;
 }
-
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -248,7 +239,7 @@
   display: block;
   width: 120px;
   height: 3px;
-  background-color:linear-gradient(90deg, #007bff, #00c6ff);
+  background-color: linear-gradient(90deg, #007bff, #00c6ff);
   margin: 12px auto 0;
   border-radius: 2px;
 }
