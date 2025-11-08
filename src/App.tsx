@@ -6,12 +6,12 @@ import HostedJudge0Runner from "./views/HostedJude0Test";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import AuthRoom from "./views/AuthRoom";
-import SendFriendRequest from "./views/SendFriendRequest";
-import SeeFriendRequests from "./views/SeeFriendRequests";
+import SendFriendRequest from "./components/SendFriendRequest";
+import SeeFriendRequests from "./components/SeeFriendRequests";
 import Dashboard from "./views/Dashboard";
 import TriviaPage from "./views/TriviaPage";
+import FriendSystem from "./views/FriendSystem";
 import "./App.css";
-import FriendSystem from "./api/friendSystem";
 
 function App() {
   return (
