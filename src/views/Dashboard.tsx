@@ -19,8 +19,14 @@ import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 import NavBar from "../components/NavBar";
 import { useNavigate, Link } from "react-router-dom";
+import { socket } from "../lib/socket";
 
 type FriendRow = { id: string; username: string; date: string };
+
+type InviteNotification = {
+    roomCode: string;
+    inviterUsername: string;
+}
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -36,6 +42,15 @@ const Dashboard: React.FC = () => {
   const [selectedFriendId, setSelectedFriendId] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [selectedDurationMin, setSelectedDurationMin] = useState<5 | 10 | 15>(5);
+
+  const [invite, setInvite] = useState<InviteNotification | null>(null); 
+  const [openInviteDialog, setOpenInviteDialog] = useState(false);
+
+  useEffect(() => {
+        if (!socket.connected) {
+            socket.connect();
+        }
+  }, []);
 
   useEffect(() => {
     let aborted = false;
@@ -60,6 +75,18 @@ const Dashboard: React.FC = () => {
     })();
     return () => {
       aborted = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on('friendInvited', (data: InviteNotification) => {
+        console.log("Received Invitation!", data);
+        setInvite(data);
+        setOpenInviteDialog(true);
+    });
+
+    return () => {
+      socket.off('friendInvited');
     };
   }, []);
 
@@ -283,6 +310,41 @@ const Dashboard: React.FC = () => {
           <Button variant="contained" onClick={createRoom} disabled={creating || !canStart}>
             {creating ? "Starting…" : "Start"}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openInviteDialog}
+        onClose={() => { setOpenInviteDialog(false); setInvite(null); }}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>You've been challenged!</DialogTitle>
+        <DialogContent>
+            <Typography variant="h6" sx={{ mb: 1 }}>
+                {invite?.inviterUsername} has challenged you to a coding battle!
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+                Do you want to accept the challenge and join the room now?
+            </Typography>
+        </DialogContent>
+        <DialogActions>
+            <Button 
+                onClick={() => { setOpenInviteDialog(false); setInvite(null); }}
+            >
+                Decline
+            </Button>
+            <Button 
+                variant="contained" 
+                onClick={() => {
+                    if (invite) {
+                        setOpenInviteDialog(false);
+                        navigate(`/battle/${encodeURIComponent(invite.roomCode)}?lang=${encodeURIComponent(lang)}`);
+                    }
+                }}
+            >
+                Accept and Join
+            </Button>
         </DialogActions>
       </Dialog>
     </Box>
