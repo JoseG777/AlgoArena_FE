@@ -33,6 +33,8 @@ type BackendGraded = {
   breakdown: Record<string, number | string>;
 };
 
+type ApiError = { error?: string };
+
 function b64enc(s: string) {
   return btoa(unescape(encodeURIComponent(s)));
 }
@@ -193,14 +195,16 @@ const BattleRoom: React.FC = () => {
         }),
       });
 
-      const data: BackendGraded | { error: string } = await res.json();
+      const data: unknown = await res.json();
 
       if (!res.ok) {
-        setErrorMsg((data as any)?.error || "Run failed");
+        const err = data as ApiError;
+        setErrorMsg(err.error ?? "Run failed");
         return;
       }
 
       const d = data as BackendGraded;
+
       setStatus(d.status || "Unknown");
       setStdout(d.stdout || "");
       setStderr(d.stderr || "");
@@ -209,8 +213,9 @@ const BattleRoom: React.FC = () => {
       if (typeof d.score === "number") {
         socket.emit("updateScore", room.code, d.score);
       }
-    } catch (e: any) {
-      setErrorMsg(e?.message || "Network error");
+    } catch (e: unknown) {
+      if (e instanceof Error) setErrorMsg(e.message);
+      else setErrorMsg("Network error");
     }
   }
 
@@ -244,7 +249,10 @@ const BattleRoom: React.FC = () => {
 
       <div className="aa-row">
         <div className="aa-card">
-          <div className="aa-control-row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <div
+            className="aa-control-row"
+            style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}
+          >
             <div>
               <label className="aa-label" style={{ marginRight: 6 }}>
                 Language:

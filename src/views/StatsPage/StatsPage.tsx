@@ -28,8 +28,12 @@ const StatsPage: React.FC = () => {
         }
         const json: StatsResponse = await res.json();
         setData(json);
-      } catch (e: any) {
-        setErr(e?.message || "Error");
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setErr(e.message);
+        } else {
+          setErr("Error");
+        }
       }
     })();
   }, []);

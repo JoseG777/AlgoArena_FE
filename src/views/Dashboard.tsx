@@ -52,8 +52,11 @@ const Dashboard: React.FC = () => {
         if (aborted) return;
         setFriends(data);
         if (data.length > 0) setSelectedFriendId(data[0].id);
-      } catch (e: any) {
-        if (!aborted) setFriendsErr(e?.message || "Could not load friends");
+      } catch (e: unknown) {
+        if (!aborted) {
+          const message = e instanceof Error ? e.message : "Could not load friends";
+          setFriendsErr(message);
+        }
       } finally {
         if (!aborted) setFriendsLoading(false);
       }
@@ -97,8 +100,9 @@ const Dashboard: React.FC = () => {
       const data = await res.json();
       setOpenSetup(false);
       navigate(`/battle/${encodeURIComponent(data.code)}?lang=${encodeURIComponent(lang)}`);
-    } catch (e: any) {
-      alert(e?.message || "Could not create room");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Could not create room";
+      alert(message);
     } finally {
       setCreating(false);
     }
