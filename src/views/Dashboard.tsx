@@ -1,32 +1,19 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from "@mui/material";
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 import NavBar from "../components/NavBar";
 import { useNavigate, Link } from "react-router-dom";
+import ChallengeModal from "../components/ChallengeModal";
 import { socket } from "../lib/socket";
 
 type FriendRow = { id: string; username: string; date: string };
 
 type InviteNotification = {
-    roomCode: string;
-    inviterUsername: string;
-}
+  roomCode: string;
+  inviterUsername: string;
+};
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -39,19 +26,28 @@ const Dashboard: React.FC = () => {
   const [friendsLoading, setFriendsLoading] = useState<boolean>(true);
   const [friendsErr, setFriendsErr] = useState<string>("");
 
-  const [selectedFriendId, setSelectedFriendId] = useState<string>("");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<"easy" | "medium" | "hard">("easy");
-  const [selectedDurationMin, setSelectedDurationMin] = useState<5 | 10 | 15>(5);
-
-  const [invite, setInvite] = useState<InviteNotification | null>(null); 
+  const [invite, setInvite] = useState<InviteNotification | null>(null);
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
 
+  // Ensure socket connection
   useEffect(() => {
-        if (!socket.connected) {
-            socket.connect();
-        }
+    if (!socket.connected) socket.connect();
   }, []);
 
+  // Listen for friend invitations
+  useEffect(() => {
+    const onFriendInvited = (data: InviteNotification) => {
+      console.log("Received Invitation!", data);
+      setInvite(data);
+      setOpenInviteDialog(true);
+    };
+    socket.on("friendInvited", onFriendInvited);
+    return () => {
+      socket.off("friendInvited", onFriendInvited);
+    };
+  }, []);
+
+  // Load friends
   useEffect(() => {
     let aborted = false;
     (async () => {
@@ -66,9 +62,11 @@ const Dashboard: React.FC = () => {
         const data: FriendRow[] = await res.json();
         if (aborted) return;
         setFriends(data);
-        if (data.length > 0) setSelectedFriendId(data[0].id);
-      } catch (e: any) {
-        if (!aborted) setFriendsErr(e?.message || "Could not load friends");
+      } catch (e: unknown) {
+        if (!aborted) {
+          const message = e instanceof Error ? e.message : "Could not load friends";
+          setFriendsErr(message);
+        }
       } finally {
         if (!aborted) setFriendsLoading(false);
       }
@@ -78,32 +76,20 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    socket.on('friendInvited', (data: InviteNotification) => {
-        console.log("Received Invitation!", data);
-        setInvite(data);
-        setOpenInviteDialog(true);
-    });
-
-    return () => {
-      socket.off('friendInvited');
-    };
-  }, []);
-
-  function findSelectedFriendUsername(): string | null {
-    const f = friends.find((x) => x.id === selectedFriendId);
-    return f?.username ?? null;
-  }
-
-  const canStart = !friendsLoading && !friendsErr && !!selectedFriendId;
-
-  async function createRoom() {
+  // Create room using values from ChallengeModal
+  async function createRoomWith({
+    opponentUsername,
+    difficulty,
+    durationMin,
+  }: {
+    opponentUsername: string;
+    difficulty: "easy" | "medium" | "hard";
+    durationMin: 5 | 10 | 15;
+  }) {
     if (creating) return;
     setCreating(true);
     try {
-      const allowUsername = findSelectedFriendUsername();
-      const durationSec = selectedDurationMin * 60;
-      const difficulty = selectedDifficulty; 
+      const durationSec = durationMin * 60;
 
       const res = await fetch("http://localhost:3001/rooms", {
         method: "POST",
@@ -112,7 +98,7 @@ const Dashboard: React.FC = () => {
         body: JSON.stringify({
           difficulty,
           durationSec,
-          allowUsername,
+          allowUsername: opponentUsername,
         }),
       });
 
@@ -124,8 +110,9 @@ const Dashboard: React.FC = () => {
       const data = await res.json();
       setOpenSetup(false);
       navigate(`/battle/${encodeURIComponent(data.code)}?lang=${encodeURIComponent(lang)}`);
-    } catch (e: any) {
-      alert(e?.message || "Could not create room");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Could not create room";
+      alert(message);
     } finally {
       setCreating(false);
     }
@@ -229,122 +216,58 @@ const Dashboard: React.FC = () => {
         </div>
       </Box>
 
-      <Dialog
+      {/* Challenge setup modal */}
+      <ChallengeModal
         open={openSetup}
-        onClose={() => (!creating ? setOpenSetup(false) : undefined)}
-        fullWidth
-        maxWidth="sm"
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !creating && canStart) {
-            e.preventDefault();
-            createRoom();
-          }
-        }}
-      >
-        <DialogTitle>Start a Coding Battle</DialogTitle>
-        <DialogContent dividers>
-          <Stack spacing={3} sx={{ mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel id="friend-label">Friend</InputLabel>
-              <Select
-                labelId="friend-label"
-                label="Friend"
-                value={selectedFriendId}
-                onChange={(e) => setSelectedFriendId(e.target.value as string)}
-                disabled={friendsLoading || !!friendsErr}
-              >
-                {friendsLoading && <MenuItem disabled>Loading…</MenuItem>}
-                {friendsErr && <MenuItem disabled>Error loading friends</MenuItem>}
-                {!friendsLoading && !friendsErr && friends.length === 0 && (
-                  <MenuItem disabled>No friends yet</MenuItem>
-                )}
-                {!friendsLoading &&
-                  !friendsErr &&
-                  friends.map((f) => (
-                    <MenuItem key={f.id} value={f.id}>
-                      {f.username}
-                    </MenuItem>
-                  ))}
-              </Select>
-              <Typography variant="caption" sx={{ mt: 0.5 }}>
-                Pick a friend to invite.
-              </Typography>
-            </FormControl>
+        onClose={() => setOpenSetup(false)}
+        loading={creating}
+        friends={friends.map(({ id, username }) => ({ id, username }))}
+        friendsLoading={friendsLoading}
+        friendsError={friendsErr}
+        onConfirm={({ opponentUsername, difficulty, durationMin }) =>
+          createRoomWith({ opponentUsername, difficulty, durationMin })
+        }
+      />
 
-            <FormControl fullWidth>
-              <InputLabel id="difficulty-label">Difficulty</InputLabel>
-              <Select
-                labelId="difficulty-label"
-                label="Difficulty"
-                value={selectedDifficulty}
-                onChange={(e) =>
-                  setSelectedDifficulty(e.target.value as "easy" | "medium" | "hard")
-                }
-              >
-                <MenuItem value="easy">Easy</MenuItem>
-                <MenuItem value="medium">Medium</MenuItem>
-                <MenuItem value="hard">Hard</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="duration-label">Duration</InputLabel>
-              <Select
-                labelId="duration-label"
-                label="Duration"
-                value={selectedDurationMin}
-                onChange={(e) => setSelectedDurationMin(Number(e.target.value) as 5 | 10 | 15)}
-              >
-                <MenuItem value={5}>5 minutes</MenuItem>
-                <MenuItem value={10}>10 minutes</MenuItem>
-                <MenuItem value={15}>15 minutes</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={() => setOpenSetup(false)} disabled={creating}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={createRoom} disabled={creating || !canStart}>
-            {creating ? "Starting…" : "Start"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
+      {/* Incoming challenge dialog */}
       <Dialog
         open={openInviteDialog}
-        onClose={() => { setOpenInviteDialog(false); setInvite(null); }}
+        onClose={() => {
+          setOpenInviteDialog(false);
+          setInvite(null);
+        }}
         fullWidth
         maxWidth="xs"
       >
         <DialogTitle>You've been challenged!</DialogTitle>
         <DialogContent>
-            <Typography variant="h6" sx={{ mb: 1 }}>
-                {invite?.inviterUsername} has challenged you to a coding battle!
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-                Do you want to accept the challenge and join the room now?
-            </Typography>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            {invite?.inviterUsername} has challenged you to a coding battle!
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Do you want to accept the challenge and join the room now?
+          </Typography>
         </DialogContent>
         <DialogActions>
-            <Button 
-                onClick={() => { setOpenInviteDialog(false); setInvite(null); }}
-            >
-                Decline
-            </Button>
-            <Button 
-                variant="contained" 
-                onClick={() => {
-                    if (invite) {
-                        setOpenInviteDialog(false);
-                        navigate(`/battle/${encodeURIComponent(invite.roomCode)}?lang=${encodeURIComponent(lang)}`);
-                    }
-                }}
-            >
-                Accept and Join
-            </Button>
+          <Button
+            onClick={() => {
+              setOpenInviteDialog(false);
+              setInvite(null);
+            }}
+          >
+            Decline
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              if (invite) {
+                setOpenInviteDialog(false);
+                navigate(`/battle/${encodeURIComponent(invite.roomCode)}?lang=${encodeURIComponent(lang)}`);
+              }
+            }}
+          >
+            Accept and Join
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

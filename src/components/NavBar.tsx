@@ -27,12 +27,17 @@ const NavBar: React.FC = () => {
 
   return (
     <AppBar
-      position="static"
+      position="fixed"
       elevation={0}
       sx={{
-        backgroundColor: "transparent",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100px",
+        backgroundColor: "rgba(10, 15, 25, 0.9)",
+        backdropFilter: "blur(10px)",
+        borderBottom: "1px solid rgba(255,255,255,0.1)",
         padding: "0.25rem 1.5rem",
-        marginTop: "-1.5rem",
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -50,33 +55,85 @@ const NavBar: React.FC = () => {
         </Box>
 
         {/* Navigation Buttons */}
-        <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
-          <Button
-            color="inherit"
-            sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
-            onClick={() => navigate("/dash-board")}
-          >
-            HOME
-          </Button>
+        <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
+          {[
+            { label: "Home", path: "/dash-board" },
+            { label: "Stats", path: "/stats" },
+            { label: "Friends", path: "/friends" },
+          ].map((item) => (
+            <Button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              sx={{
+                position: "relative",
+                color: "#e2e8f0",
+                fontWeight: 600,
+                fontSize: "1rem",
+                textTransform: "none",
+                letterSpacing: "0.5px",
+                padding: "6px 10px",
+                transition: "color 0.25s ease",
 
-          <Button color="inherit" sx={{ fontWeight: "bold", fontSize: "1.2rem" }}>
-            STATS
-          </Button>
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "0%",
+                  height: "2px",
+                  backgroundColor: "#60a5fa",
+                  transition: "width 0.3s ease",
+                  borderRadius: "2px",
+                },
 
-          <Button
-            color="inherit"
-            sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
-            onClick={() => navigate("/friends")}
-          >
-            FRIENDS
-          </Button>
+                "&:hover": {
+                  color: "#60a5fa",
+                  background: "transparent",
+                },
+                "&:hover::after": {
+                  width: "100%",
+                },
+              }}
+            >
+              {item.label}
+            </Button>
+          ))}
 
+          {/* Logout Button (Styled Differently) */}
           <Button
-            color="inherit"
-            sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
             onClick={handleLogout}
+            sx={{
+              position: "relative",
+              color: "#f87171",
+              fontWeight: 600,
+              fontSize: "1rem",
+              textTransform: "none",
+              letterSpacing: "0.5px",
+              padding: "6px 10px",
+              transition: "color 0.25s ease",
+
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                width: "0%",
+                height: "2px",
+                backgroundColor: "#ef4444",
+                transition: "width 0.3s ease",
+                borderRadius: "2px",
+              },
+
+              "&:hover": {
+                color: "#ef4444",
+                background: "transparent",
+              },
+              "&:hover::after": {
+                width: "100%",
+              },
+            }}
           >
-            LOGOUT
+            Logout
           </Button>
         </Box>
       </Toolbar>

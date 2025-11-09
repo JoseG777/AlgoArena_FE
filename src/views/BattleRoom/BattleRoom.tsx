@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
-import { socket } from "../lib/socket";
-import "./Arena/Arena.css";
+import { socket } from "../../lib/socket";
+import "./BattleRoom.css";
 
 type Lang = "typescript" | "python";
 const LANGUAGE_IDS: Record<Lang, number> = { typescript: 74, python: 71 };
@@ -12,6 +12,7 @@ type ProblemDTO = {
   title: string;
   difficulty: "easy" | "medium" | "hard";
   startingCode: Record<Lang, string>;
+  problemDescription: string;
 };
 
 type RoomDTO = {
@@ -32,6 +33,8 @@ type BackendGraded = {
   breakdown: Record<string, number | string>;
 };
 
+type ApiError = { error?: string };
+
 function b64enc(s: string) {
   return btoa(unescape(encodeURIComponent(s)));
 }
@@ -50,6 +53,7 @@ const BattleRoom: React.FC = () => {
 
   const [language, setLanguage] = useState<Lang>(initialLang);
   const [source, setSource] = useState<string>("");
+  const [showDesc, setShowDesc] = useState<boolean>(false);
 
   const [status, setStatus] = useState<string>("");
   const [stdout, setStdout] = useState<string>("");
@@ -73,6 +77,7 @@ const BattleRoom: React.FC = () => {
           return;
         }
         const data: RoomDTO = await res.json();
+        console.log(data.problem.problemDescription);
         if (aborted) return;
 
         setRoom(data);
@@ -137,10 +142,11 @@ const BattleRoom: React.FC = () => {
         joinedRef.current = res.roomCode!;
 
         setMembers((prev) => {
-          const initialMembers = res.members?.map((username) => ({
-            username,
-            score: prev.find((m) => m.username === username)?.score ?? 0,
-          })) ?? [];
+          const initialMembers =
+            res.members?.map((username) => ({
+              username,
+              score: prev.find((m) => m.username === username)?.score ?? 0,
+            })) ?? [];
           return initialMembers;
         });
 
@@ -189,14 +195,16 @@ const BattleRoom: React.FC = () => {
         }),
       });
 
-      const data: BackendGraded | { error: string } = await res.json();
+      const data: unknown = await res.json();
 
       if (!res.ok) {
-        setErrorMsg((data as any)?.error || "Run failed");
+        const err = data as ApiError;
+        setErrorMsg(err.error ?? "Run failed");
         return;
       }
 
       const d = data as BackendGraded;
+
       setStatus(d.status || "Unknown");
       setStdout(d.stdout || "");
       setStderr(d.stderr || "");
@@ -205,8 +213,9 @@ const BattleRoom: React.FC = () => {
       if (typeof d.score === "number") {
         socket.emit("updateScore", room.code, d.score);
       }
-    } catch (e: any) {
-      setErrorMsg(e?.message || "Network error");
+    } catch (e: unknown) {
+      if (e instanceof Error) setErrorMsg(e.message);
+      else setErrorMsg("Network error");
     }
   }
 
@@ -221,7 +230,7 @@ const BattleRoom: React.FC = () => {
 
   return (
     <div className="aa-root">
-      <h1 className="aa-title">AlgoArena Editor</h1>
+      <h1 className="aa-title">Battle Room</h1>
 
       <div style={{ color: "#aaa", marginBottom: 8 }}>
         Room: <strong>{room.code}</strong> · Problem: <strong>{room.problem.title}</strong> (
@@ -230,8 +239,7 @@ const BattleRoom: React.FC = () => {
         {members.length > 0 ? (
           members.map((member, i) => (
             <span key={member.username}>
-              {member.username} (Score: {member.score})
-              {i < members.length - 1 && " · "}
+              {member.username} (Score: {member.score}){i < members.length - 1 && " · "}
             </span>
           ))
         ) : (
@@ -241,7 +249,10 @@ const BattleRoom: React.FC = () => {
 
       <div className="aa-row">
         <div className="aa-card">
-          <div className="aa-control-row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <div
+            className="aa-control-row"
+            style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}
+          >
             <div>
               <label className="aa-label" style={{ marginRight: 6 }}>
                 Language:
@@ -255,7 +266,50 @@ const BattleRoom: React.FC = () => {
                 <option value="python">Python</option>
               </select>
             </div>
+
+            {/* Problem description toggle */}
+            <div>
+              <button
+                onClick={() => setShowDesc((s) => !s)}
+                aria-expanded={showDesc}
+                aria-controls="aa-problem-desc"
+                style={{
+                  marginLeft: 8,
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  background: "rgba(255,255,255,0.02)",
+                  color: "#e6f6ff",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                {showDesc ? "Hide Problem" : "Show Problem"}
+              </button>
+            </div>
           </div>
+
+          {/* Collapsible problem description (keeps original design, shown above editor) */}
+          {showDesc && (
+            <div
+              id="aa-problem-desc"
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(76, 201, 240, 0.04)",
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 10,
+                maxHeight: 280,
+                overflow: "auto",
+                color: "#e6f6ff",
+                whiteSpace: "pre-wrap",
+                lineHeight: 1.5,
+              }}
+            >
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>{room.problem.title}</div>
+              <div style={{ color: "#d6f6ff" }}>{room.problem.problemDescription}</div>
+            </div>
+          )}
 
           <Editor
             className="aa-editor"

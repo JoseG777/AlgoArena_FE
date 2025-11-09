@@ -1,1 +1,0 @@
-git branch -d feature/routing && git push origin --delete feature/routing

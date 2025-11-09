@@ -53,9 +53,9 @@ const AlgorithmVortex: React.FC = () => {
   return (
     <Particles
       id="algo-vortex"
-      options={options as any}
+      options={options}
       style={{ position: "absolute", inset: 0, zIndex: 0 }}
-      init={particlesInit as any}
+      init={particlesInit}
     />
   );
 };

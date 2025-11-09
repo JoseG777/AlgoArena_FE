@@ -1,4 +1,3 @@
-// src/pages/SeeFriendRequests.tsx
 import { useEffect, useState } from "react";
 
 type FriendRequest = {
@@ -23,9 +22,9 @@ export default function SeeFriendRequests() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load friend requests");
       setRequests(data);
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message || "Network error");
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Network error");
     }
   }
 
@@ -40,9 +39,9 @@ export default function SeeFriendRequests() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to accept");
       await fetchIncoming();
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message || "Network error");
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Network error");
     } finally {
       setBusyId(null);
     }
@@ -59,9 +58,9 @@ export default function SeeFriendRequests() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to reject");
       await fetchIncoming();
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message || "Network error");
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Network error");
     } finally {
       setBusyId(null);
     }

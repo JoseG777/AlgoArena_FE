@@ -9,16 +9,16 @@ const HomePage: React.FC = () => {
   return (
     <Box
       sx={{
-        width: "100vw",
-        minHeight: "100vh",
-        position: "relative", // put the page in a stacking context
+        width: "100%",
+        minHeight: "100dvh",
+        position: "relative",
         background: "linear-gradient(160deg, #03045E, #000000)",
         color: "#fff",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "flex-start",
-        overflowY: "auto",
+        overflowX: "hidden",
         p: 2,
         pb: 6,
       }}
