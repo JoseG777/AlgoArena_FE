@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ChallengeModal from "./ChallengeModal";
 import "../views/FriendsPage/FriendsPage.css";
 
 type Friend = {
@@ -12,6 +14,10 @@ export default function SeeFriends() {
   const [busy, setBusy] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
+
+  const [openForUsername, setOpenForUsername] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const navigate = useNavigate();
 
   async function fetchFriends() {
     try {
@@ -46,15 +52,57 @@ export default function SeeFriends() {
 
   function confirmAndRemove(username: string) {
     const ok = window.confirm(`Are you sure you want to remove @${username} from your friends?`);
-    if (!ok) return; // keep the kebab open if cancelled; closes on outside click
-    removeFriend(username); // proceed if confirmed
+    if (!ok) return;
+    removeFriend(username);
   }
 
   function handleChallenge(username: string) {
-    alert(`Challenge sent to @${username}! (Logic TBI)`);
+    setActiveMenu(null);
+    setOpenForUsername(username);
   }
 
-  // Close menu on outside click or Escape
+  async function createRoomWith({
+    opponentUsername,
+    difficulty,
+    durationMin,
+  }: {
+    opponentUsername: string;
+    difficulty: "easy" | "medium" | "hard";
+    durationMin: 5 | 10 | 15;
+  }) {
+    if (creating) return;
+    setCreating(true);
+    try {
+      const durationSec = durationMin * 60;
+
+      const res = await fetch("http://localhost:3001/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          difficulty,
+          durationSec,
+          allowUsername: opponentUsername,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || "Failed to create room");
+      }
+
+      const data = await res.json();
+      setOpenForUsername(null);
+      const lang = "typescript";
+      navigate(`/battle/${encodeURIComponent(data.code)}?lang=${encodeURIComponent(lang)}`);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Could not create room";
+      alert(message);
+    } finally {
+      setCreating(false);
+    }
+  }
+
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (!popupRef.current) return;
@@ -147,6 +195,16 @@ export default function SeeFriends() {
       <button className="refresh-btn" onClick={fetchFriends}>
         Refresh
       </button>
+
+      <ChallengeModal
+        open={!!openForUsername}
+        onClose={() => setOpenForUsername(null)}
+        onConfirm={({ opponentUsername, difficulty, durationMin }) =>
+          createRoomWith({ opponentUsername, difficulty, durationMin })
+        }
+        opponentUsername={openForUsername ?? undefined}
+        loading={creating}
+      />
     </div>
   );
 }
