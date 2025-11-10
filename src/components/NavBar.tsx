@@ -99,7 +99,7 @@ const NavBar: React.FC = () => {
             </Button>
           ))}
 
-          {/* Logout Button (Styled Differently) */}
+          {/* Logout Button*/}
           <Button
             onClick={handleLogout}
             sx={{
