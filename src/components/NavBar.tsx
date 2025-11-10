@@ -1,9 +1,10 @@
 import React from "react";
 import { AppBar, Toolbar, Box, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -24,6 +25,12 @@ const NavBar: React.FC = () => {
       console.error("Logout request error:", err);
     }
   };
+
+  const navItems = [
+    { label: "Home", path: "/dash-board" },
+    { label: "Stats", path: "/stats" },
+    { label: "Friends", path: "/friends" },
+  ];
 
   return (
     <AppBar
@@ -99,7 +106,7 @@ const NavBar: React.FC = () => {
             </Button>
           ))}
 
-          {/* Logout Button (Styled Differently) */}
+          {/* Logout Button*/}
           <Button
             onClick={handleLogout}
             sx={{
