@@ -29,7 +29,7 @@ const TriviaPage: React.FC = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/trivia");
+        const res = await axios.get("http://localhost:3001/trivia");
         if (res.data.success && res.data.data.length > 0) {
           setQuestions(res.data.data);
         }
