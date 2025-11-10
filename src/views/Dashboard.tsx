@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+} from "@mui/material";
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
@@ -262,7 +271,9 @@ const Dashboard: React.FC = () => {
             onClick={() => {
               if (invite) {
                 setOpenInviteDialog(false);
-                navigate(`/battle/${encodeURIComponent(invite.roomCode)}?lang=${encodeURIComponent(lang)}`);
+                navigate(
+                  `/battle/${encodeURIComponent(invite.roomCode)}?lang=${encodeURIComponent(lang)}`
+                );
               }
             }}
           >

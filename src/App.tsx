@@ -86,6 +86,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/trivia"
+          element={
+            <ProtectedRoute>
+              <TriviaPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

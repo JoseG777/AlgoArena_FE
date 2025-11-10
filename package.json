@@ -17,6 +17,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
+    "axios": "^1.13.1",
     "react-router-dom": "^7.9.1",
     "react-tsparticles": "^2.12.2",
     "socket.io-client": "^4.8.1",
