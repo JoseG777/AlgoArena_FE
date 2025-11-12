@@ -15,12 +15,15 @@ type ProblemDTO = {
   problemDescription: string;
 };
 
+type MemberDTO = { username: string; score: number; finished?: boolean };
+
 type RoomDTO = {
   code: string;
   problem: ProblemDTO;
   timeLeft: number | null;
   expiresAt: string;
   started: boolean;
+  members?: MemberDTO[];
 };
 
 type BackendGraded = {
@@ -51,7 +54,7 @@ const BattleRoom: React.FC = () => {
   const [room, setRoom] = useState<RoomDTO | null>(null);
   const [started, setStarted] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [members, setMembers] = useState<{ username: string; score: number }[]>([]);
+  const [members, setMembers] = useState<MemberDTO[]>([]);
 
   const [language, setLanguage] = useState<Lang>(initialLang);
   const [source, setSource] = useState<string>("");
@@ -63,6 +66,8 @@ const BattleRoom: React.FC = () => {
   const [compileOutput, setCompileOutput] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [score, setScore] = useState<number | null>(null);
+
+  const [finished, setFinished] = useState(false);
 
   const joinedRef = useRef<string>("");
 
@@ -84,6 +89,8 @@ const BattleRoom: React.FC = () => {
         setRoom(data);
         setStarted(Boolean(data.started));
         setTimeLeft(typeof data.timeLeft === "number" ? data.timeLeft : null);
+
+        setMembers(Array.isArray(data.members) ? data.members : []);
 
         const langSafe: Lang = initialLang;
         setLanguage(langSafe);
@@ -109,70 +116,67 @@ const BattleRoom: React.FC = () => {
     const onUserJoined = (p: { username: string }) => {
       setMembers((prev) => {
         if (prev.some((m) => m.username === p.username)) return prev;
-        return [...prev, { username: p.username, score: 0 }];
+        return [...prev, { username: p.username, score: 0, finished: false }];
       });
     };
-    const onMembersUpdated = (updatedMembers: { username: string; score: number }[]) => {
-      setMembers((prev) => {
-        const map = new Map<string, { username: string; score: number }>();
-        for (const m of prev) map.set(m.username, m);
-        for (const m of updatedMembers) map.set(m.username, m);
-        return Array.from(map.values());
-      });
-    };
+    const onMembersUpdated = (updated: MemberDTO[]) => setMembers(updated);
     const onBattleStarted = (p: { timeLeft: number; expiresAt: string }) => {
       setStarted(true);
       setTimeLeft(p.timeLeft);
     };
 
+    const joinCurrentRoom = () => {
+      socket.emit(
+        "joinRoom",
+        code,
+        (res: {
+          success?: boolean;
+          roomCode?: string;
+          error?: string;
+          members?: string[];
+          timeLeft?: number | null;
+          started?: boolean;
+        }) => {
+          if (res?.error || !res?.success) {
+            console.error("joinRoom failed:", res?.error);
+            navigate("/dash-board", { replace: true });
+            return;
+          }
+          joinedRef.current = res.roomCode!;
+          setMembers((prev) =>
+            (res.members ?? []).map((u) => ({
+              username: u,
+              score: prev.find((m) => m.username === u)?.score ?? 0,
+              finished: prev.find((m) => m.username === u)?.finished ?? false,
+            }))
+          );
+          setStarted(Boolean(res.started));
+          setTimeLeft(typeof res.timeLeft === "number" ? res.timeLeft : null);
+        }
+      );
+    };
+
+    const onConnect = () => {
+      joinCurrentRoom();
+    };
+
+    socket.on("connect", onConnect);
     socket.on("timerUpdate", onTimerUpdate);
     socket.on("roomClosed", onRoomClosed);
     socket.on("userJoined", onUserJoined);
     socket.on("membersUpdated", onMembersUpdated);
     socket.on("battleStarted", onBattleStarted);
 
-    socket.emit(
-      "joinRoom",
-      code,
-      (res: {
-        success?: boolean;
-        roomCode?: string;
-        error?: string;
-        members?: string[];
-        timeLeft?: number | null;
-        started?: boolean;
-      }) => {
-        if (res?.error || !res?.success) {
-          navigate("/dash-board", { replace: true });
-          return;
-        }
-        joinedRef.current = res.roomCode!;
-
-        setMembers((prev) => {
-          const initialMembers =
-            res.members?.map((username) => ({
-              username,
-              score: prev.find((m) => m.username === username)?.score ?? 0,
-            })) ?? [];
-          return initialMembers;
-        });
-
-        setStarted(Boolean(res.started));
-        if (typeof res.timeLeft === "number") setTimeLeft(res.timeLeft);
-        else setTimeLeft(null);
-      }
-    );
+    if (socket.connected) joinCurrentRoom();
 
     return () => {
+      socket.off("connect", onConnect);
       socket.off("timerUpdate", onTimerUpdate);
       socket.off("roomClosed", onRoomClosed);
       socket.off("userJoined", onUserJoined);
       socket.off("membersUpdated", onMembersUpdated);
       socket.off("battleStarted", onBattleStarted);
-      if (joinedRef.current) {
-        socket.emit("leaveRoom", joinedRef.current);
-        joinedRef.current = "";
-      }
+      joinedRef.current = "";
     };
   }, [code, navigate]);
 
@@ -181,10 +185,10 @@ const BattleRoom: React.FC = () => {
     setSource(room.problem.startingCode[language] || "");
   }, [language, room]);
 
-  const canRun = started && timeLeft !== null && timeLeft > 0;
+  const canRun = started && timeLeft !== null && timeLeft > 0 && !finished;
 
   async function run() {
-    if (!room || !started) return;
+    if (!room || !started || finished) return;
     setErrorMsg("");
     setStatus("");
     setStdout("");
@@ -229,6 +233,12 @@ const BattleRoom: React.FC = () => {
     }
   }
 
+  function finishNow() {
+    if (!room || finished) return;
+    setFinished(true);
+    socket.emit("finish", room.code);
+  }
+
   if (!room || !started) {
     return (
       <div className="aa-root">
@@ -248,8 +258,9 @@ const BattleRoom: React.FC = () => {
         left: <strong>{timeLeft ?? "—"}</strong>s · Members:{" "}
         {members.length > 0 ? (
           members.map((member, i) => (
-            <span key={member.username}>
-              {member.username} (Score: {member.score}){i < members.length - 1 && " · "}
+            <span key={member.username} title={member.finished ? "Finished" : "Active"}>
+              {member.username} (Score: {member.score}
+              {member.finished ? " ✓" : ""}){i < members.length - 1 && " · "}
             </span>
           ))
         ) : (
@@ -298,27 +309,6 @@ const BattleRoom: React.FC = () => {
             </div>
           </div>
 
-          {showDesc && (
-            <div
-              id="aa-problem-desc"
-              style={{
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(76, 201, 240, 0.04)",
-                padding: 12,
-                borderRadius: 8,
-                marginBottom: 10,
-                maxHeight: 280,
-                overflow: "auto",
-                color: "#e6f6ff",
-                whiteSpace: "pre-wrap",
-                lineHeight: 1.5,
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 8 }}>{room.problem.title}</div>
-              <div style={{ color: "#d6f6ff" }}>{room.problem.problemDescription}</div>
-            </div>
-          )}
-
           <Editor
             className="aa-editor"
             height="100%"
@@ -332,7 +322,16 @@ const BattleRoom: React.FC = () => {
 
         <div className="aa-side">
           <button onClick={run} className="aa-run-btn" disabled={!canRun}>
-            {canRun ? "Run Code" : "Time is up"}
+            {canRun ? "Run Code" : finished ? "Finished" : "Time is up"}
+          </button>
+
+          <button
+            onClick={finishNow}
+            className="aa-run-btn"
+            disabled={finished || !started}
+            style={{ marginTop: 8 }}
+          >
+            {finished ? "Finished" : "Finish"}
           </button>
 
           <div className="aa-metrics">
