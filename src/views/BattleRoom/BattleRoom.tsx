@@ -18,8 +18,9 @@ type ProblemDTO = {
 type RoomDTO = {
   code: string;
   problem: ProblemDTO;
-  timeLeft: number;
+  timeLeft: number | null;
   expiresAt: string;
+  started: boolean;
 };
 
 type BackendGraded = {
@@ -48,6 +49,7 @@ const BattleRoom: React.FC = () => {
   const initialLang: Lang = initialLangParam === "python" ? "python" : "typescript";
 
   const [room, setRoom] = useState<RoomDTO | null>(null);
+  const [started, setStarted] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [members, setMembers] = useState<{ username: string; score: number }[]>([]);
 
@@ -77,10 +79,10 @@ const BattleRoom: React.FC = () => {
           return;
         }
         const data: RoomDTO = await res.json();
-        console.log(data.problem.problemDescription);
         if (aborted) return;
 
         setRoom(data);
+        setStarted(Boolean(data.started));
         setTimeLeft(typeof data.timeLeft === "number" ? data.timeLeft : null);
 
         const langSafe: Lang = initialLang;
@@ -110,7 +112,6 @@ const BattleRoom: React.FC = () => {
         return [...prev, { username: p.username, score: 0 }];
       });
     };
-
     const onMembersUpdated = (updatedMembers: { username: string; score: number }[]) => {
       setMembers((prev) => {
         const map = new Map<string, { username: string; score: number }>();
@@ -119,11 +120,16 @@ const BattleRoom: React.FC = () => {
         return Array.from(map.values());
       });
     };
+    const onBattleStarted = (p: { timeLeft: number; expiresAt: string }) => {
+      setStarted(true);
+      setTimeLeft(p.timeLeft);
+    };
 
     socket.on("timerUpdate", onTimerUpdate);
     socket.on("roomClosed", onRoomClosed);
     socket.on("userJoined", onUserJoined);
     socket.on("membersUpdated", onMembersUpdated);
+    socket.on("battleStarted", onBattleStarted);
 
     socket.emit(
       "joinRoom",
@@ -133,7 +139,8 @@ const BattleRoom: React.FC = () => {
         roomCode?: string;
         error?: string;
         members?: string[];
-        timeLeft?: number;
+        timeLeft?: number | null;
+        started?: boolean;
       }) => {
         if (res?.error || !res?.success) {
           navigate("/dash-board", { replace: true });
@@ -150,7 +157,9 @@ const BattleRoom: React.FC = () => {
           return initialMembers;
         });
 
+        setStarted(Boolean(res.started));
         if (typeof res.timeLeft === "number") setTimeLeft(res.timeLeft);
+        else setTimeLeft(null);
       }
     );
 
@@ -159,6 +168,7 @@ const BattleRoom: React.FC = () => {
       socket.off("roomClosed", onRoomClosed);
       socket.off("userJoined", onUserJoined);
       socket.off("membersUpdated", onMembersUpdated);
+      socket.off("battleStarted", onBattleStarted);
       if (joinedRef.current) {
         socket.emit("leaveRoom", joinedRef.current);
         joinedRef.current = "";
@@ -171,10 +181,10 @@ const BattleRoom: React.FC = () => {
     setSource(room.problem.startingCode[language] || "");
   }, [language, room]);
 
-  const canRun = timeLeft !== null && timeLeft > 0;
+  const canRun = started && timeLeft !== null && timeLeft > 0;
 
   async function run() {
-    if (!room) return;
+    if (!room || !started) return;
     setErrorMsg("");
     setStatus("");
     setStdout("");
@@ -219,11 +229,11 @@ const BattleRoom: React.FC = () => {
     }
   }
 
-  if (!room) {
+  if (!room || !started) {
     return (
       <div className="aa-root">
-        <h1 className="aa-title">AlgoArena Editor</h1>
-        <div style={{ color: "#aaa" }}>Loading room…</div>
+        <h1 className="aa-title">Battle Room</h1>
+        <div style={{ color: "#aaa" }}>Loading… (waiting for opponent)</div>
       </div>
     );
   }
@@ -267,7 +277,6 @@ const BattleRoom: React.FC = () => {
               </select>
             </div>
 
-            {/* Problem description toggle */}
             <div>
               <button
                 onClick={() => setShowDesc((s) => !s)}
@@ -289,7 +298,6 @@ const BattleRoom: React.FC = () => {
             </div>
           </div>
 
-          {/* Collapsible problem description (keeps original design, shown above editor) */}
           {showDesc && (
             <div
               id="aa-problem-desc"
