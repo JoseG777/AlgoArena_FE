@@ -1,6 +1,8 @@
 import { Box, Button, Typography, Paper, LinearProgress, CircularProgress } from "@mui/material";
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
+import NavBar from "../components/NavBar";
+import AlgorithmVortex from "../components/AlgorithmVortex";
 
 interface Question {
   question: string;
@@ -100,19 +102,34 @@ const TriviaPage: React.FC = () => {
   return (
     <Box
       sx={{
-        position: "fixed",
-        top: 0,
-        right: 0,
-        width: "100%",
-        height: "100vh",
-        background: "radial-gradient(circle at center, #03045E 0%, #000 100%)",
+        width: "100vw",
+        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#fff",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        backgroundColor: "#0f0f3c",
+        color: "white",
+        overflowY: "auto",
       }}
     >
+      <AlgorithmVortex/>
+
+      <NavBar />
+
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 4,
+          zIndex: 1,
+        }}
+        >
+
       <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 3 }}>
         Trivia Arena ⚡
       </Typography>
@@ -198,6 +215,7 @@ const TriviaPage: React.FC = () => {
       >
         {currentIndex + 1 < questions.length ? "Next Question →" : "See Results"}
       </Button>
+    </Box>
 
       {showPopup && (
         <Box
@@ -211,6 +229,7 @@ const TriviaPage: React.FC = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            zIndex:2000,
           }}
         >
           <Paper
