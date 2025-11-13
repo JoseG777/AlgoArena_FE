@@ -1,7 +1,6 @@
 import { Box, Button, Typography, Paper, LinearProgress, CircularProgress } from "@mui/material";
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import NavBar from "../components/NavBar";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 
 interface Question {
@@ -115,8 +114,6 @@ const TriviaPage: React.FC = () => {
       }}
     >
       <AlgorithmVortex/>
-
-      <NavBar />
 
       <Box
         sx={{
