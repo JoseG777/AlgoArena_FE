@@ -309,6 +309,13 @@ const BattleRoom: React.FC = () => {
             </div>
           </div>
 
+          {showDesc && (
+            <div id="aa-problem-desc" className="aa-problem-desc">
+              <h2>{room.problem.title}</h2>
+              <div>{room.problem.problemDescription}</div>
+            </div>
+          )}
+
           <Editor
             className="aa-editor"
             height="100%"

@@ -113,7 +113,7 @@ const TriviaPage: React.FC = () => {
         overflowY: "auto",
       }}
     >
-      <AlgorithmVortex/>
+      <AlgorithmVortex />
 
       <Box
         sx={{
@@ -125,94 +125,93 @@ const TriviaPage: React.FC = () => {
           padding: 4,
           zIndex: 1,
         }}
-        >
-
-      <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 3 }}>
-        Trivia Arena ⚡
-      </Typography>
-
-      <Box sx={{ width: "80%", maxWidth: 600, mb: 3 }}>
-        <LinearProgress
-          variant="determinate"
-          value={((currentIndex + 1) / questions.length) * 100}
-          sx={{
-            height: 10,
-            borderRadius: 5,
-            backgroundColor: "rgba(255,255,255,0.1)",
-            "& .MuiLinearProgress-bar": { backgroundColor: "#4CC9F0" },
-          }}
-        />
-      </Box>
-
-      <Paper
-        sx={{
-          width: "80%",
-          maxWidth: 600,
-          p: 4,
-          backgroundColor: "rgba(0, 0, 0, 0.7)",
-          border: "1px solid rgba(76, 201, 240, 0.4)",
-          borderRadius: 3,
-          boxShadow: "0 0 20px rgba(76, 201, 240, 0.3)",
-          textAlign: "center",
-        }}
       >
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 3,
-            color: "#E0E0E0",
-            fontWeight: "bold",
-            textShadow: "0 0 10px rgba(255, 215, 0, 0.6)",
-          }}
-        >
-          {currentQuestion.question}
+        <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 3 }}>
+          Trivia Arena ⚡
         </Typography>
 
-        {options.map((option) => (
-          <Button
-            key={option}
-            onClick={() => handleAnswerSelect(option)}
-            disableElevation
+        <Box sx={{ width: "80%", maxWidth: 600, mb: 3 }}>
+          <LinearProgress
+            variant="determinate"
+            value={((currentIndex + 1) / questions.length) * 100}
             sx={{
-              mb: 2,
-              width: "100%",
-              height: 56,
-              borderWidth: 2,
-              borderStyle: "solid",
-              borderColor: "#4CC9F0",
-              backgroundColor: selectedOption === option ? "#4CC9F0" : "transparent",
-              color: selectedOption === option ? "#000" : "#4CC9F0",
+              height: 10,
+              borderRadius: 5,
+              backgroundColor: "rgba(255,255,255,0.1)",
+              "& .MuiLinearProgress-bar": { backgroundColor: "#4CC9F0" },
+            }}
+          />
+        </Box>
+
+        <Paper
+          sx={{
+            width: "80%",
+            maxWidth: 600,
+            p: 4,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            border: "1px solid rgba(76, 201, 240, 0.4)",
+            borderRadius: 3,
+            boxShadow: "0 0 20px rgba(76, 201, 240, 0.3)",
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 3,
+              color: "#E0E0E0",
               fontWeight: "bold",
-              fontSize: "1rem",
-              textTransform: "none",
-              transition: "background-color 0.2s, color 0.2s",
-              "&:hover": {
-                backgroundColor: "#4CC9F0",
-                color: "#000",
-              },
+              textShadow: "0 0 10px rgba(255, 215, 0, 0.6)",
             }}
           >
-            {option}
-          </Button>
-        ))}
-      </Paper>
+            {currentQuestion.question}
+          </Typography>
 
-      <Button
-        variant="contained"
-        onClick={handleNext}
-        sx={{
-          mt: 4,
-          px: 4,
-          py: 1.5,
-          backgroundColor: "#7209B7",
-          "&:hover": { backgroundColor: "#560BAD" },
-          borderRadius: "30px",
-          fontWeight: "bold",
-        }}
-      >
-        {currentIndex + 1 < questions.length ? "Next Question →" : "See Results"}
-      </Button>
-    </Box>
+          {options.map((option) => (
+            <Button
+              key={option}
+              onClick={() => handleAnswerSelect(option)}
+              disableElevation
+              sx={{
+                mb: 2,
+                width: "100%",
+                height: 56,
+                borderWidth: 2,
+                borderStyle: "solid",
+                borderColor: "#4CC9F0",
+                backgroundColor: selectedOption === option ? "#4CC9F0" : "transparent",
+                color: selectedOption === option ? "#000" : "#4CC9F0",
+                fontWeight: "bold",
+                fontSize: "1rem",
+                textTransform: "none",
+                transition: "background-color 0.2s, color 0.2s",
+                "&:hover": {
+                  backgroundColor: "#4CC9F0",
+                  color: "#000",
+                },
+              }}
+            >
+              {option}
+            </Button>
+          ))}
+        </Paper>
+
+        <Button
+          variant="contained"
+          onClick={handleNext}
+          sx={{
+            mt: 4,
+            px: 4,
+            py: 1.5,
+            backgroundColor: "#7209B7",
+            "&:hover": { backgroundColor: "#560BAD" },
+            borderRadius: "30px",
+            fontWeight: "bold",
+          }}
+        >
+          {currentIndex + 1 < questions.length ? "Next Question →" : "See Results"}
+        </Button>
+      </Box>
 
       {showPopup && (
         <Box
@@ -226,7 +225,7 @@ const TriviaPage: React.FC = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            zIndex:2000,
+            zIndex: 2000,
           }}
         >
           <Paper
