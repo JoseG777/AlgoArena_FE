@@ -59,6 +59,7 @@ const NavBar: React.FC = () => {
           {[
             { label: "Home", path: "/dash-board" },
             { label: "Stats", path: "/stats" },
+            { label: "Notifications", path: "/notifications" },
             { label: "Friends", path: "/friends" },
           ].map((item) => (
             <Button

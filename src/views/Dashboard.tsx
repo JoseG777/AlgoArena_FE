@@ -7,13 +7,9 @@ import NavBar from "../components/NavBar";
 import { useNavigate, Link } from "react-router-dom";
 import ChallengeModal from "../components/ChallengeModal";
 import { socket } from "../lib/socket";
+import { useInvitations } from "../context/InvitationContext";
 
 type FriendRow = { id: string; username: string; date: string };
-
-type InviteNotification = {
-  roomCode: string;
-  inviterUsername: string;
-};
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -26,8 +22,9 @@ const Dashboard: React.FC = () => {
   const [friendsLoading, setFriendsLoading] = useState<boolean>(true);
   const [friendsErr, setFriendsErr] = useState<string>("");
 
-  const [invite, setInvite] = useState<InviteNotification | null>(null);
+  const [latestInvite, setLatestInvite] = useState<typeof useInvitations extends () => { invitations: (infer T)[] } ? T | null : null>(null);
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
+  const { invitations, removeInvitation } = useInvitations();
 
   // Ensure socket connection
   useEffect(() => {
@@ -36,16 +33,28 @@ const Dashboard: React.FC = () => {
 
   // Listen for friend invitations
   useEffect(() => {
-    const onFriendInvited = (data: InviteNotification) => {
-      console.log("Received Invitation!", data);
-      setInvite(data);
-      setOpenInviteDialog(true);
-    };
-    socket.on("friendInvited", onFriendInvited);
-    return () => {
-      socket.off("friendInvited", onFriendInvited);
-    };
-  }, []);
+    if (invitations.length > 0) {
+      const newInvite = invitations[invitations.length - 1];
+      if (newInvite.roomCode !== latestInvite?.roomCode) {
+        setLatestInvite(newInvite);
+        setOpenInviteDialog(true);
+      }
+    }
+  }, [invitations, latestInvite?.roomCode]);
+
+  const handleDecline = () => {
+    setOpenInviteDialog(false);
+  };
+
+  const handleAccept = () => {
+    if (latestInvite) {
+      const defaultLang = lang;
+      removeInvitation(latestInvite.roomCode);
+      setOpenInviteDialog(false);
+      setLatestInvite(null);
+      navigate(`/battle/${encodeURIComponent(latestInvite.roomCode)}?lang=${encodeURIComponent(defaultLang)}`);
+    }
+  };
 
   // Load friends
   useEffect(() => {
@@ -232,17 +241,14 @@ const Dashboard: React.FC = () => {
       {/* Incoming challenge dialog */}
       <Dialog
         open={openInviteDialog}
-        onClose={() => {
-          setOpenInviteDialog(false);
-          setInvite(null);
-        }}
+        onClose={handleDecline}
         fullWidth
         maxWidth="xs"
       >
         <DialogTitle>You've been challenged!</DialogTitle>
         <DialogContent>
           <Typography variant="h6" sx={{ mb: 1 }}>
-            {invite?.inviterUsername} has challenged you to a coding battle!
+            {latestInvite?.inviterUsername} has challenged you to a coding battle!
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Do you want to accept the challenge and join the room now?
@@ -250,21 +256,13 @@ const Dashboard: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => {
-              setOpenInviteDialog(false);
-              setInvite(null);
-            }}
+            onClick={handleDecline}
           >
             Decline
           </Button>
           <Button
             variant="contained"
-            onClick={() => {
-              if (invite) {
-                setOpenInviteDialog(false);
-                navigate(`/battle/${encodeURIComponent(invite.roomCode)}?lang=${encodeURIComponent(lang)}`);
-              }
-            }}
+            onClick={handleAccept}
           >
             Accept and Join
           </Button>
