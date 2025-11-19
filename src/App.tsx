@@ -9,11 +9,14 @@ import TriviaPage from "./views/TriviaPage";
 import BattleRoom from "./views/BattleRoom/BattleRoom";
 import FriendsPage from "./views/FriendsPage/FriendsPage";
 import StatsPage from "./views/StatsPage/StatsPage";
+import NotificationsPage from "./views/NotificationsPage/NotificationsPage";
+import { InvitationProvider } from "./context/InvitationContext";
 import "./App.css";
 
 function App() {
   return (
     <BrowserRouter>
+    <InvitationProvider>
       <Routes>
         {/* Public Routes */}
         <Route
@@ -88,14 +91,15 @@ function App() {
         />
 
         <Route
-          path="/trivia"
+          path="/notifications"
           element={
             <ProtectedRoute>
-              <TriviaPage />
+              <NotificationsPage />
             </ProtectedRoute>
           }
         />
       </Routes>
+    </InvitationProvider>
     </BrowserRouter>
   );
 }
