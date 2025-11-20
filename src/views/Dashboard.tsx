@@ -8,12 +8,16 @@ import {
   DialogContent,
   DialogActions,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 import NavBar from "../components/NavBar";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ChallengeModal from "../components/ChallengeModal";
 import { socket } from "../lib/socket";
 
@@ -37,6 +41,13 @@ const Dashboard: React.FC = () => {
 
   const [invite, setInvite] = useState<InviteNotification | null>(null);
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
+
+  const [openTriviaSetup, setOpenTriviaSetup] =useState(false);
+  const [creatingTrivia, setCreatingTrivia] =useState(false);
+  const [triviaSettings, setTriviaSettings] =useState({
+    difficulty: "easy" as "easy" | "medium" | "hard",
+    duration: 5 as 5 | 10 | 15,
+  });
 
   // Ensure socket connection
   useEffect(() => {
@@ -127,6 +138,43 @@ const Dashboard: React.FC = () => {
     }
   }
 
+  async function createTriviaRoom({
+    difficulty,
+    duration,
+  }: {
+    difficulty: "easy" | "medium" | "hard";
+    duration: 5 | 10 | 15;
+  }) {
+    if (creatingTrivia) return;
+    setCreatingTrivia(true);
+    try {
+      const durationSec = duration * 60;
+
+      const res = await fetch("http://localhost:3001/trivia-room", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ difficulty, durationSec }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || "Failed to create trivia room");
+      }
+
+      const data = await res.json();
+      setOpenTriviaSetup(false);
+      
+      navigate("/trivia", {
+        state: { difficulty, duration, roomCode: data.code },
+      });
+    } catch {
+      alert("Could not create trivia room");
+    } finally {
+      setCreatingTrivia(false);
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -186,9 +234,9 @@ const Dashboard: React.FC = () => {
 
           <Grid item>
             <Button
-              component={Link}
-              to="/trivia"
               variant="contained"
+              onClick={() => setOpenTriviaSetup(true)}   
+              disabled={creatingTrivia}
               sx={{
                 width: { xs: 480, sm: 480 },
                 height: { xs: 450, sm: 350 },
@@ -233,10 +281,120 @@ const Dashboard: React.FC = () => {
         friends={friends.map(({ id, username }) => ({ id, username }))}
         friendsLoading={friendsLoading}
         friendsError={friendsErr}
-        onConfirm={({ opponentUsername, difficulty, durationMin }) =>
-          createRoomWith({ opponentUsername, difficulty, durationMin })
-        }
+        onConfirm={(data: {
+          opponentUsername: string;
+          difficulty: "easy" | "medium" | "hard";
+          durationMin: 5 | 10 | 15;
+        }) => createRoomWith(data)}
       />
+        <Dialog open={openTriviaSetup} onClose={() => setOpenTriviaSetup(false)} PaperProps={{ 
+          sx: {
+            borderRadius: 3,
+            width:320,
+            maxWidth: "90%",
+            paddingY: 1,
+            backgroundColor: "#0f172a",
+            color: "white",
+            boxShadow:"0 0 30px rgba(76, 201, 240, 0.4)",
+          },
+        }}
+        BackdropProps={{
+          sx: {
+            backgroundColor: "rgba(0,0,0,0.7)", 
+            backdropFilter: "blur(3px)", 
+          },
+        }}
+        >
+        <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.15rem", textAlign:"center",pb:1, }}>Create a Room</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1,px:2, }}>
+          <FormControl fullWidth variant= "outlined" size="medium">
+            <InputLabel sx={{ color:"#cbd5e1" }}>Difficulty</InputLabel>
+            <Select
+              value={triviaSettings.difficulty}
+              label="Difficulty"
+              onChange={(e) =>
+                setTriviaSettings({
+                  ...triviaSettings,
+                  difficulty: e.target.value as "easy" | "medium" | "hard",
+                })
+              }
+              sx={{
+                backgroundColor: "rgba(255,255,255,0.08)",
+                color: "white",
+                borderRadius: 1.5,
+                "& .MuiSelect-icon": { color: "white" },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "rgba(255,255,255,0.2)",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#4CC9F0",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#4CC9F0",
+                },
+              }}
+            >
+              <MenuItem value="easy">Easy</MenuItem>
+              <MenuItem value="medium">Medium</MenuItem>
+              <MenuItem value="hard">Hard</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth variant="outlined" size="medium">
+            <InputLabel sx={{ color:"#b0b0b0" }}>Duration (minutes)</InputLabel>
+            <Select
+              value={triviaSettings.duration}
+              label="Duration (minutes)"
+              onChange={(e) =>
+                setTriviaSettings({
+                  ...triviaSettings,
+                  duration: Number(e.target.value) as 5 | 10 | 15,
+                })
+              }
+              sx={{
+                backgroundColor: "rgba(255,255,255,0.08)",
+                color: "white",
+                borderRadius: 1.5,
+                "& .MuiSelect-icon": { color: "white" },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "rgba(255,255,255,0.2)",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#4CC9F0",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#4CC9F0",
+                },
+              }}
+            >
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={15}>15</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+
+        <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
+          <Button onClick={() => setOpenTriviaSetup(false)} sx={{ color: "#94a3b8" }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={creatingTrivia}
+            onClick={() => createTriviaRoom(triviaSettings)}
+            sx={{
+              backgroundColor: "#3b82f6",
+              "&:hover": { backgroundColor: "#2563eb" },
+              borderRadius: "10px",
+              fontWeight: "bold",
+              px: 3,
+            }}
+          >
+            {creatingTrivia ? "Creating…" : "Create"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
 
       {/* Incoming challenge dialog */}
       <Dialog

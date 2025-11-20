@@ -1,5 +1,6 @@
 import { Box, Button, Typography, Paper, LinearProgress, CircularProgress } from "@mui/material";
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 
@@ -19,6 +20,10 @@ const TriviaPage: React.FC = () => {
   const [score, setScore] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
 
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const navigate = useNavigate();
+
   // --- Fetch questions once ---
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -26,6 +31,7 @@ const TriviaPage: React.FC = () => {
         const res = await axios.get("http://localhost:3001/trivia");
         if (res.data.success && res.data.data.length > 0) {
           setQuestions(res.data.data);
+          setIsTimerActive(true);
         }
       } catch (err) {
         console.error("Error fetching trivia:", err);
@@ -35,6 +41,29 @@ const TriviaPage: React.FC = () => {
     };
     fetchQuestions();
   }, []);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | undefined;
+    if (isTimerActive) {
+      interval = setInterval(() => {
+        setTimeElapsed((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerActive]);
+
+  useEffect(() => {
+    if (showPopup) setIsTimerActive(false);
+  }, [showPopup]);
+
+  useEffect(() => {
+    if (showPopup) {
+      const timeout = setTimeout(() => {
+        navigate("/dash-board");
+      }, 4000);
+      return () =>  clearTimeout(timeout);
+    }
+  }, [showPopup, navigate]);
 
   const currentQuestion = questions[currentIndex];
 
@@ -55,8 +84,15 @@ const TriviaPage: React.FC = () => {
       setCurrentIndex((prev) => prev + 1);
       setSelectedOption(null);
     } else {
+      setIsTimerActive(false);
       setShowPopup(true);
     }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
   // --- Loading state ---
@@ -129,6 +165,11 @@ const TriviaPage: React.FC = () => {
 
       <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 3 }}>
         Trivia Arena ⚡
+      </Typography>
+
+      {/* Timer display */}
+      <Typography sx={{ mb: 2, fontWeight: "bold", color: "#A0A0A0" }}>
+        Time Elapsed: {formatTime(timeElapsed)}
       </Typography>
 
       <Box sx={{ width: "80%", maxWidth: 600, mb: 3 }}>
@@ -246,6 +287,9 @@ const TriviaPage: React.FC = () => {
             <Typography variant="h6" sx={{ mb: 1 }}>
               Score: {score} / {questions.length}
             </Typography>
+            <Typography variant="body1" sx={{ mb: 1, color: "#A0A0A0" }}>
+              Time Taken: {formatTime(timeElapsed)}
+            </Typography>
             <Typography variant="body1" sx={{ mb: 3, color: "#A0A0A0" }}>
               Great job! Keep improving ⚡
             </Typography>
@@ -257,14 +301,14 @@ const TriviaPage: React.FC = () => {
                 borderRadius: "25px",
                 px: 4,
               }}
-              onClick={() => window.location.reload()}
+              onClick={() => navigate("/dash-board")}
             >
               Continue
             </Button>
           </Paper>
         </Box>
       )}
-    </Box>
+    </Box>  
   );
 };
 
