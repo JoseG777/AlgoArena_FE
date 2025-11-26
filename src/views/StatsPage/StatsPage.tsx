@@ -16,11 +16,13 @@ import {
   Grid,
 } from "@mui/material";
 import AlgorithmVortex from "../../components/AlgorithmVortex";
+import GlobalLeaderboard from "./globalleaderboard";
 
 type Leader = {
   rank: number;
   username: string;
   points: number;
+  isSelf?: boolean;
 };
 
 const placeholderLeaders: Leader[] = [
@@ -48,63 +50,55 @@ type StatsResponse = {
 };
 
 const StatsPage: React.FC = () => {
-  const [leaders, setLeaders] = useState<Leader[]>(placeholderLeaders);
-  const [err, setErr] = useState<string>("");
   const [view, setView] = useState<"global" | "mystats">("global");
 
+  const [leaders, setLeaders] = useState<Leader[]>(placeholderLeaders);
+  const [loadingGlobal, setLoadingGlobal] = useState(false);
+
   const [myStats, setMyStats] = useState<StatsResponse | null>(null);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
+    // Fetch My Stats
     (async () => {
       try {
         const res = await fetch("http://localhost:3001/me/matches", {
           credentials: "include",
         });
-        if (!res.ok) {
-          const e = await res.json().catch(() => ({}));
-          throw new Error(e?.error || "Failed to load Stats");
-        }
-        const json: StatsResponse = await res.json();
 
+        if (!res.ok) throw new Error("Failed to load stats");
+
+        const json: StatsResponse = await res.json();
         setMyStats(json);
 
-        if (json.matches && json.matches.length > 0) {
-          const myPoints = json.totalPoints || 0;
-          const myUsername = "You";
+        const myPoints = json.totalPoints;
+        const updated = [
+          { rank: 0, username: "You", points: myPoints, isSelf: true },
+          ...placeholderLeaders,
+        ]
+          .sort((a, b) => b.points - a.points)
+          .map((player, index) => ({ ...player, rank: index + 1 }));
 
-          const updated = [
-            { rank: 0, username: myUsername, points: myPoints },
-            ...placeholderLeaders,
-          ]
-            .sort((a, b) => b.points - a.points)
-            .map((p, i) => ({ ...p, rank: i + 1 }));
-
-          setLeaders(updated);
-        }
-      } catch (e: unknown) {
-        if (e instanceof Error) setErr(e.message);
-        else setErr("Error");
+        setLeaders(updated);
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "Error");
       }
     })();
   }, []);
 
   if (err) return <div>Error: {err}</div>;
 
-  const winCount = myStats?.matches.filter((m) => m.result === "win").length || 0;
-  const lossCount = myStats?.matches.filter((m) => m.result === "loss").length || 0;
-  const tieCount = myStats?.matches.filter((m) => m.result === "tie").length || 0;
+  const winCount = myStats?.matches.filter((m) => m.result === "win").length ?? 0;
+  const lossCount = myStats?.matches.filter((m) => m.result === "loss").length ?? 0;
+  const tieCount = myStats?.matches.filter((m) => m.result === "tie").length ?? 0;
 
   return (
     <Box
       sx={{
         width: "100vw",
         minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        backgroundColor: "#121729ff",
+        backgroundColor: "#121729",
+        position: "relative",
         color: "white",
         overflow: "hidden",
       }}
@@ -114,6 +108,7 @@ const StatsPage: React.FC = () => {
       <Box sx={{ position: "relative", zIndex: 2 }}>
         <NavBar />
 
+        {/* Title */}
         <Typography
           variant="h4"
           sx={{
@@ -128,6 +123,7 @@ const StatsPage: React.FC = () => {
           {view === "global" ? "GLOBAL LEADERBOARD" : "MY STATS"}
         </Typography>
 
+        {/* View Buttons */}
         <Box sx={{ display: "flex", justifyContent: "center", gap: 3, mb: 4 }}>
           <Button
             onClick={() => setView("global")}
@@ -135,126 +131,82 @@ const StatsPage: React.FC = () => {
               color: view === "global" ? "#60a5fa" : "#cbd5e1",
               fontWeight: 700,
               textTransform: "uppercase",
-              "&:hover": { color: "#93c5fd" },
             }}
           >
             Global
           </Button>
+
           <Button
             onClick={() => setView("mystats")}
             sx={{
               color: view === "mystats" ? "#60a5fa" : "#cbd5e1",
               fontWeight: 700,
               textTransform: "uppercase",
-              "&:hover": { color: "#93c5fd" },
             }}
           >
             My Stats
           </Button>
         </Box>
 
-        {/* GLOBAL VIEW */}
+        {/* GLOBAL LEADERBOARD */}
         {view === "global" && (
-          <TableContainer
-            component={Paper}
-            sx={{
-              width: "60%",
-              backgroundColor: "#1e293b",
-              borderRadius: 3,
-              overflow: "hidden",
-              boxShadow: "0 0 20px rgba(30,58,138,0.3)",
-              mx: "auto",
-            }}
-          >
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#111827" }}>
-                  <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>#</TableCell>
-                  <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>USERNAME</TableCell>
-                  <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>POINTS</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {leaders.map((player) => (
-                  <TableRow
-                    key={player.rank}
-                    sx={{
-                      backgroundColor:
-                        player.rank === 1 ? "rgba(79,70,229,0.3)" : "rgba(30,41,59,0.5)",
-                    }}
-                  >
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>{player.rank}</TableCell>
-                    <TableCell
-                      sx={{
-                        color: player.username === "You" ? "#38bdf8" : "white",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {player.username}
-                    </TableCell>
-                    <TableCell sx={{ color: "#38bdf8", fontWeight: "bold" }}>
-                      {player.points}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <GlobalLeaderboard leaders={leaders} loading={loadingGlobal} />
         )}
 
+        {/* MY STATS */}
         {view === "mystats" && myStats && (
           <Box
             sx={{
               width: "80%",
               backgroundColor: "rgba(30,41,59,0.9)",
-              borderRadius: 3,
               p: 4,
               mx: "auto",
-              boxShadow: "0 0 25px rgba(30,58,138,0.4)",
+              borderRadius: 3,
             }}
           >
+            {/* Summary stats */}
             <Card
               sx={{
                 backgroundColor: "rgba(15,23,42,0.9)",
                 borderRadius: 3,
                 mb: 4,
                 p: 2,
-                boxShadow: "0 0 15px rgba(30,58,138,0.2)",
               }}
             >
               <CardContent>
                 <Grid container spacing={2} justifyContent="center" textAlign="center">
                   <Grid item xs={12} sm={3}>
-                    <Typography variant="h6" sx={{ color: "#38bdf8", fontWeight: "bold" }}>
+                    <Typography sx={{ color: "#38bdf8", fontWeight: "bold" }} variant="h6">
                       {myStats.totalPoints}
                     </Typography>
-                    <Typography sx={{ color: "#cbd5e1" }}>Total Points</Typography>
+                    <Typography>Points</Typography>
                   </Grid>
                   <Grid item xs={4} sm={3}>
-                    <Typography variant="h6" sx={{ color: "#4ade80", fontWeight: "bold" }}>
+                    <Typography sx={{ color: "#4ade80", fontWeight: "bold" }} variant="h6">
                       {winCount}
                     </Typography>
-                    <Typography sx={{ color: "#cbd5e1" }}>Wins</Typography>
+                    <Typography>Wins</Typography>
                   </Grid>
                   <Grid item xs={4} sm={3}>
-                    <Typography variant="h6" sx={{ color: "#f87171", fontWeight: "bold" }}>
+                    <Typography sx={{ color: "#f87171", fontWeight: "bold" }} variant="h6">
                       {lossCount}
                     </Typography>
-                    <Typography sx={{ color: "#cbd5e1" }}>Losses</Typography>
+                    <Typography>Losses</Typography>
                   </Grid>
                   <Grid item xs={4} sm={3}>
-                    <Typography variant="h6" sx={{ color: "#facc15", fontWeight: "bold" }}>
+                    <Typography sx={{ color: "#facc15", fontWeight: "bold" }} variant="h6">
                       {tieCount}
                     </Typography>
-                    <Typography sx={{ color: "#cbd5e1" }}>Ties</Typography>
+                    <Typography>Ties</Typography>
                   </Grid>
                 </Grid>
               </CardContent>
             </Card>
 
+            {/* Match History */}
             <Typography
               variant="h6"
-              sx={{ mb: 2, fontWeight: "bold", color: "#60a5fa", textAlign: "center" }}
+              sx={{ mb: 2, textAlign: "center", color: "#60a5fa", fontWeight: "bold" }}
             >
               Match History
             </Typography>
@@ -263,32 +215,34 @@ const StatsPage: React.FC = () => {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "#111827" }}>
-                    <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>DATE</TableCell>
-                    <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>OPPONENT</TableCell>
-                    <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>RESULT</TableCell>
-                    <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>POINTS</TableCell>
+                    <TableCell sx={{ color: "#93c5fd" }}>DATE</TableCell>
+                    <TableCell sx={{ color: "#93c5fd" }}>OPPONENT</TableCell>
+                    <TableCell sx={{ color: "#93c5fd" }}>RESULT</TableCell>
+                    <TableCell sx={{ color: "#93c5fd" }}>POINTS</TableCell>
                   </TableRow>
                 </TableHead>
+
                 <TableBody>
                   {myStats.matches.map((m) => (
                     <TableRow key={m.id}>
                       <TableCell sx={{ color: "white" }}>
                         {new Date(m.startedAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell sx={{ color: "white" }}>{m.opponentUsername ?? "—"}</TableCell>
+                      <TableCell sx={{ color: "white" }}>
+                        {m.opponentUsername ?? "—"}
+                      </TableCell>
                       <TableCell
                         sx={{
                           color:
                             m.result === "win"
                               ? "#4ade80"
                               : m.result === "loss"
-                                ? "#f87171"
-                                : "#facc15",
+                              ? "#f87171"
+                              : "#facc15",
                           fontWeight: "bold",
-                          textTransform: "uppercase",
                         }}
                       >
-                        {m.result}
+                        {m.result.toUpperCase()}
                       </TableCell>
                       <TableCell sx={{ color: "#38bdf8", fontWeight: "bold" }}>
                         {m.points}
