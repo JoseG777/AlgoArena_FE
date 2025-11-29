@@ -31,7 +31,7 @@ const SignIn: React.FC = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:3001/login", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -46,7 +46,7 @@ const SignIn: React.FC = () => {
       }
 
       await refreshUser();
-      navigate("/test");
+      navigate("/dash-board");
 
       setMessage(data.message || "Login successful!");
     } catch (err) {

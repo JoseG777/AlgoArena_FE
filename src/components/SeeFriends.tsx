@@ -21,7 +21,7 @@ export default function SeeFriends() {
 
   async function fetchFriends() {
     try {
-      const res = await fetch("http://localhost:3001/friends", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/friends`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -35,7 +35,7 @@ export default function SeeFriends() {
   async function removeFriend(username: string) {
     setBusy(username);
     try {
-      const res = await fetch(`http://localhost:3001/friends/${encodeURIComponent(username)}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/friends/${encodeURIComponent(username)}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -75,7 +75,7 @@ export default function SeeFriends() {
     try {
       const durationSec = durationMin * 60;
 
-      const res = await fetch("http://localhost:3001/rooms", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/rooms`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

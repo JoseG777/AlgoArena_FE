@@ -76,7 +76,7 @@ const BattleRoom: React.FC = () => {
     (async () => {
       if (!code) return;
       try {
-        const res = await fetch(`http://localhost:3001/rooms/${encodeURIComponent(code)}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/rooms/${encodeURIComponent(code)}`, {
           credentials: "include",
         });
         if (!res.ok) {
@@ -197,7 +197,7 @@ const BattleRoom: React.FC = () => {
     setScore(null);
 
     try {
-      const res = await fetch("http://localhost:3001/judge0/run", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/judge0/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

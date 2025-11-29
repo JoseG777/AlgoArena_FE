@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function refreshUser() {
     try {
-      const res = await fetch("http://localhost:3001/me", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/me`, {
         credentials: "include",
       });
       if (res.ok) {

@@ -57,7 +57,7 @@ const StatsPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("http://localhost:3001/me/matches", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/me/matches`, {
           credentials: "include",
         });
         if (!res.ok) {

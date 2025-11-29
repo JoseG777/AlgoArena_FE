@@ -7,7 +7,7 @@ const NavBar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch("http://localhost:3001/logout", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });

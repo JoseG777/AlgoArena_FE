@@ -72,7 +72,7 @@ const Dashboard: React.FC = () => {
       setFriendsLoading(true);
       setFriendsErr("");
       try {
-        const res = await fetch("http://localhost:3001/friends", { credentials: "include" });
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/friends`, { credentials: "include" });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err?.error || "Failed to load friends");
@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
     try {
       const durationSec = durationMin * 60;
 
-      const res = await fetch("http://localhost:3001/rooms", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/rooms`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
