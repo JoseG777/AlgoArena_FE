@@ -22,6 +22,20 @@ interface Question {
   difficulty?: string;
 }
 
+type TriviaResultsPayload = {
+  roomCode: string;
+  yourScore: number;
+  yourCorrectCount: number;
+  yourTotalQuestions: number;
+  leaderboard: {
+    userId: string;
+    username: string;
+    score: number;
+    correctCount: number;
+    totalQuestions: number;
+  }[];
+};
+
 const TriviaPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -34,6 +48,7 @@ const TriviaPage: React.FC = () => {
   const [roomJoined, setRoomJoined] = useState(false);
   const [roomStarted, setRoomStarted] = useState(false);
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
+  const [waitingForResults, setWaitingForResults] = useState(false);
 
   const navigate = useNavigate();
   const { code } = useParams<{ code: string }>();
@@ -81,13 +96,23 @@ const TriviaPage: React.FC = () => {
       }
     };
 
+    const onTriviaResults = (payload: TriviaResultsPayload) => {
+      if (payload.roomCode !== roomCode) return;
+      setServerScore(payload.yourScore);
+      setScore(payload.yourCorrectCount);
+      setWaitingForResults(false);
+      setShowPopup(true);
+    };
+
     socket.on("battleStarted", onBattleStarted);
     socket.on("roomClosed", onRoomClosed);
+    socket.on("triviaResults", onTriviaResults as any);
 
     return () => {
       socket.emit("leaveRoom", roomCode);
       socket.off("battleStarted", onBattleStarted);
       socket.off("roomClosed", onRoomClosed);
+      socket.off("triviaResults", onTriviaResults as any);
     };
   }, [roomCode, navigate, showPopup]);
 
@@ -112,15 +137,6 @@ const TriviaPage: React.FC = () => {
     };
     fetchQuestions();
   }, [roomStarted, questionsLoaded, roomCode]);
-
-  useEffect(() => {
-    if (showPopup) {
-      const timeout = setTimeout(() => {
-        navigate("/dash-board");
-      }, 4000);
-      return () => clearTimeout(timeout);
-    }
-  }, [showPopup, navigate]);
 
   const currentQuestion = questions[currentIndex];
 
@@ -173,6 +189,7 @@ const TriviaPage: React.FC = () => {
     } else {
       try {
         if (roomCode) {
+          setWaitingForResults(true);
           const res = await axios.post(
             "http://localhost:3001/trivia/submit",
             {
@@ -182,20 +199,24 @@ const TriviaPage: React.FC = () => {
             },
             { withCredentials: true }
           );
-          if (res.data && typeof res.data.score === "number") {
-            setServerScore(res.data.score);
-          } else {
+          if (!res.data || typeof res.data !== "object") {
+            setWaitingForResults(false);
             setServerScore(score * 10);
+            setShowPopup(true);
+          } else {
+            if (res.data.allFinished === true) {
+            }
           }
         } else {
           setServerScore(score * 10);
+          setShowPopup(true);
         }
       } catch (err) {
         console.error("Error submitting trivia results:", err);
+        setWaitingForResults(false);
         setServerScore(score * 10);
+        setShowPopup(true);
       }
-
-      setShowPopup(true);
     }
   };
 
@@ -273,6 +294,35 @@ const TriviaPage: React.FC = () => {
     );
   }
 
+  const finalPoints = serverScore ?? score * 10;
+  const baseNoBonus = score * 10;
+  const extraPoints = finalPoints - baseNoBonus;
+
+  let hasAllCorrectBonus = false;
+  let hasSpeedBonus = false;
+
+  if (score === questions.length) {
+    if (extraPoints >= 10) {
+      hasAllCorrectBonus = true;
+    }
+    if (extraPoints >= 20) {
+      hasSpeedBonus = true;
+    }
+  } else {
+    if (extraPoints >= 10) {
+      hasSpeedBonus = true;
+    }
+  }
+
+  let bonusText = "";
+  if (hasAllCorrectBonus && hasSpeedBonus) {
+    bonusText = "+10 for all correct, +10 speed bonus (fastest high score).";
+  } else if (hasAllCorrectBonus) {
+    bonusText = "+10 bonus for getting every question correct.";
+  } else if (hasSpeedBonus) {
+    bonusText = "+10 speed bonus for finishing first and highest.";
+  }
+
   return (
     <Box
       sx={{
@@ -330,62 +380,75 @@ const TriviaPage: React.FC = () => {
             textAlign: "center",
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{
-              mb: 3,
-              color: "#E0E0E0",
-              fontWeight: "bold",
-              textShadow: "0 0 10px rgba(255, 215, 0, 0.6)",
-            }}
-          >
-            {currentQuestion.question}
-          </Typography>
+          {waitingForResults ? (
+            <Box sx={{ mt: 2 }}>
+              <CircularProgress />
+              <Typography sx={{ mt: 2, fontWeight: "bold", color: "#A0A0A0" }}>
+                Waiting for your opponent to finish…
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 3,
+                  color: "#E0E0E0",
+                  fontWeight: "bold",
+                  textShadow: "0 0 10px rgba(255, 215, 0, 0.6)",
+                }}
+              >
+                {currentQuestion.question}
+              </Typography>
 
-          {options.map((option) => (
-            <Button
-              key={option}
-              onClick={() => handleAnswerSelect(option)}
-              disableElevation
-              sx={{
-                mb: 2,
-                width: "100%",
-                height: 56,
-                borderWidth: 2,
-                borderStyle: "solid",
-                borderColor: "#4CC9F0",
-                backgroundColor: selectedOption === option ? "#4CC9F0" : "transparent",
-                color: selectedOption === option ? "#000" : "#4CC9F0",
-                fontWeight: "bold",
-                fontSize: "1rem",
-                textTransform: "none",
-                transition: "background-color 0.2s, color 0.2s",
-                "&:hover": {
-                  backgroundColor: "#4CC9F0",
-                  color: "#000",
-                },
-              }}
-            >
-              {option}
-            </Button>
-          ))}
+              {options.map((option) => (
+                <Button
+                  key={option}
+                  onClick={() => handleAnswerSelect(option)}
+                  disableElevation
+                  sx={{
+                    mb: 2,
+                    width: "100%",
+                    height: 56,
+                    borderWidth: 2,
+                    borderStyle: "solid",
+                    borderColor: "#4CC9F0",
+                    backgroundColor: selectedOption === option ? "#4CC9F0" : "transparent",
+                    color: selectedOption === option ? "#000" : "#4CC9F0",
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    textTransform: "none",
+                    transition: "background-color 0.2s, color 0.2s",
+                    "&:hover": {
+                      backgroundColor: "#4CC9F0",
+                      color: "#000",
+                    },
+                  }}
+                >
+                  {option}
+                </Button>
+              ))}
+            </>
+          )}
         </Paper>
 
-        <Button
-          variant="contained"
-          onClick={handleNext}
-          sx={{
-            mt: 4,
-            px: 4,
-            py: 1.5,
-            backgroundColor: "#7209B7",
-            "&:hover": { backgroundColor: "#560BAD" },
-            borderRadius: "30px",
-            fontWeight: "bold",
-          }}
-        >
-          {currentIndex + 1 < questions.length ? "Next Question →" : "See Results"}
-        </Button>
+        {!waitingForResults && (
+          <Button
+            variant="contained"
+            onClick={handleNext}
+            sx={{
+              mt: 4,
+              px: 4,
+              py: 1.5,
+              backgroundColor: "#7209B7",
+              "&:hover": { backgroundColor: "#560BAD" },
+              borderRadius: "30px",
+              fontWeight: "bold",
+            }}
+          >
+            {currentIndex + 1 < questions.length ? "Next Question →" : "Submit Answers"}
+          </Button>
+        )}
       </Box>
 
       {showPopup && (
@@ -420,9 +483,14 @@ const TriviaPage: React.FC = () => {
             <Typography variant="h6" sx={{ mb: 1 }}>
               Correct: {score} / {questions.length}
             </Typography>
-            <Typography variant="h6" sx={{ mb: 3 }}>
-              Battle Points: {serverScore ?? score * 10}
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Battle Points: {finalPoints}
             </Typography>
+            {bonusText && (
+              <Typography variant="body2" sx={{ mb: 2, color: "#fbbf24" }}>
+                {bonusText}
+              </Typography>
+            )}
             <Typography variant="body1" sx={{ mb: 3, color: "#A0A0A0" }}>
               Speed and accuracy both matter. Nice work ⚡
             </Typography>
@@ -434,9 +502,14 @@ const TriviaPage: React.FC = () => {
                 borderRadius: "25px",
                 px: 4,
               }}
-              onClick={() => navigate("/dash-board")}
+              onClick={() => {
+                if (roomCode) {
+                  socket.emit("triviaDone", roomCode);
+                }
+                navigate("/dash-board");
+              }}
             >
-              Continue
+              Done
             </Button>
           </Paper>
         </Box>
