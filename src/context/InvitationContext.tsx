@@ -1,11 +1,5 @@
-import React, { 
-    createContext, 
-    useContext, 
-    useState, 
-    useEffect, 
-    type ReactNode
-} from "react";
-import { socket } from "../lib/socket"; 
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { socket } from "../lib/socket";
 
 type InviteNotification = {
   roomCode: string;
@@ -14,7 +8,9 @@ type InviteNotification = {
 
 type InvitationContextType = {
   invitations: InviteNotification[];
+  triviaInvites: InviteNotification[];
   removeInvitation: (roomCode: string) => void;
+  removeTriviaInvitation: (roomCode: string) => void;
 };
 
 const InvitationContext = createContext<InvitationContextType | undefined>(undefined);
@@ -33,20 +29,31 @@ type InvitationProviderProps = {
 
 export const InvitationProvider: React.FC<InvitationProviderProps> = ({ children }) => {
   const [invitations, setInvitations] = useState<InviteNotification[]>([]);
+  const [triviaInvites, setTriviaInvites] = useState<InviteNotification[]>([]);
 
-  // Listen for friend invitations via socket
   useEffect(() => {
-    if (!socket.connected) socket.connect(); 
+    if (!socket.connected) socket.connect();
 
     const onFriendInvited = (data: InviteNotification) => {
       console.log("Received Invitation!", data);
-      setInvitations((prev) => 
-        prev.find(i => i.roomCode === data.roomCode) ? prev : [...prev, data]
+      setInvitations((prev) =>
+        prev.find((i) => i.roomCode === data.roomCode) ? prev : [...prev, data]
       );
     };
+
+    const onFriendInvitedTrivia = (data: InviteNotification) => {
+      console.log("Received Trivia Invitation!", data);
+      setTriviaInvites((prev) =>
+        prev.find((i) => i.roomCode === data.roomCode) ? prev : [...prev, data]
+      );
+    };
+
     socket.on("friendInvited", onFriendInvited);
+    socket.on("friendInvitedTrivia", onFriendInvitedTrivia);
+
     return () => {
       socket.off("friendInvited", onFriendInvited);
+      socket.off("friendInvitedTrivia", onFriendInvitedTrivia);
     };
   }, []);
 
@@ -54,8 +61,14 @@ export const InvitationProvider: React.FC<InvitationProviderProps> = ({ children
     setInvitations((prev) => prev.filter((invite) => invite.roomCode !== roomCode));
   };
 
+  const removeTriviaInvitation = (roomCode: string) => {
+    setTriviaInvites((prev) => prev.filter((invite) => invite.roomCode !== roomCode));
+  };
+
   return (
-    <InvitationContext.Provider value={{ invitations, removeInvitation }}>
+    <InvitationContext.Provider
+      value={{ invitations, triviaInvites, removeInvitation, removeTriviaInvitation }}
+    >
       {children}
     </InvitationContext.Provider>
   );
