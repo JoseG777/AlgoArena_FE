@@ -16,90 +16,90 @@ import "./App.css";
 function App() {
   return (
     <BrowserRouter>
-    <InvitationProvider>
-      <Routes>
-        {/* Public Routes */}
-        <Route
-          path="/"
-          element={
-            <PublicOnlyRoute to="/dash-board">
-              <HomePage />
-            </PublicOnlyRoute>
-          }
-        />
-        <Route
-          path="/sign-up"
-          element={
-            <PublicOnlyRoute to="/dash-board">
-              <SignUp />
-            </PublicOnlyRoute>
-          }
-        />
-        <Route
-          path="/sign-in"
-          element={
-            <PublicOnlyRoute to="/dash-board">
-              <SignIn />
-            </PublicOnlyRoute>
-          }
-        />
+      <InvitationProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/"
+            element={
+              <PublicOnlyRoute to="/dash-board">
+                <HomePage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/sign-up"
+            element={
+              <PublicOnlyRoute to="/dash-board">
+                <SignUp />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/sign-in"
+            element={
+              <PublicOnlyRoute to="/dash-board">
+                <SignIn />
+              </PublicOnlyRoute>
+            }
+          />
 
-        {/* Protected Routes */}
-        <Route
-          path="/dash-board"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected Routes */}
+          <Route
+            path="/dash-board"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/battle/:code"
-          element={
-            <ProtectedRoute>
-              <BattleRoom />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/battle/:code"
+            element={
+              <ProtectedRoute>
+                <BattleRoom />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/friends"
-          element={
-            <ProtectedRoute>
-              <FriendsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/trivia/:code"
+            element={
+              <ProtectedRoute>
+                <TriviaPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/trivia"
-          element={
-            <ProtectedRoute>
-              <TriviaPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/friends"
+            element={
+              <ProtectedRoute>
+                <FriendsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/stats"
-          element={
-            <ProtectedRoute>
-              <StatsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/stats"
+            element={
+              <ProtectedRoute>
+                <StatsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/notifications"
-          element={
-            <ProtectedRoute>
-              <NotificationsPage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </InvitationProvider>
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </InvitationProvider>
     </BrowserRouter>
   );
 }

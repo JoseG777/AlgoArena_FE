@@ -13,12 +13,17 @@ import CodeIcon from "@mui/icons-material/Code";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import AlgorithmVortex from "../components/AlgorithmVortex";
 import NavBar from "../components/NavBar";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ChallengeModal from "../components/ChallengeModal";
 import { socket } from "../lib/socket";
 import { useInvitations } from "../context/InvitationContext";
 
 type FriendRow = { id: string; username: string; date: string };
+
+type TriviaInvite = {
+  roomCode: string;
+  inviterUsername: string;
+};
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -31,16 +36,22 @@ const Dashboard: React.FC = () => {
   const [friendsLoading, setFriendsLoading] = useState<boolean>(true);
   const [friendsErr, setFriendsErr] = useState<string>("");
 
-  const [latestInvite, setLatestInvite] = useState<typeof useInvitations extends () => { invitations: (infer T)[] } ? T | null : null>(null);
+  const [latestInvite, setLatestInvite] = useState<
+    typeof useInvitations extends () => { invitations: (infer T)[] } ? T | null : null
+  >(null);
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
   const { invitations, removeInvitation } = useInvitations();
 
-  // Ensure socket connection
+  const [openTriviaSetup, setOpenTriviaSetup] = useState(false);
+  const [creatingTrivia, setCreatingTrivia] = useState(false);
+
+  const [triviaInvite, setTriviaInvite] = useState<TriviaInvite | null>(null);
+  const [openTriviaInviteDialog, setOpenTriviaInviteDialog] = useState(false);
+
   useEffect(() => {
     if (!socket.connected) socket.connect();
   }, []);
 
-  // Listen for friend invitations
   useEffect(() => {
     if (invitations.length > 0) {
       const newInvite = invitations[invitations.length - 1];
@@ -50,6 +61,17 @@ const Dashboard: React.FC = () => {
       }
     }
   }, [invitations, latestInvite?.roomCode]);
+
+  useEffect(() => {
+    const handler = (data: TriviaInvite) => {
+      setTriviaInvite(data);
+      setOpenTriviaInviteDialog(true);
+    };
+    socket.on("friendInvitedTrivia", handler);
+    return () => {
+      socket.off("friendInvitedTrivia", handler);
+    };
+  }, []);
 
   const handleDecline = () => {
     setOpenInviteDialog(false);
@@ -61,11 +83,14 @@ const Dashboard: React.FC = () => {
       removeInvitation(latestInvite.roomCode);
       setOpenInviteDialog(false);
       setLatestInvite(null);
-      navigate(`/battle/${encodeURIComponent(latestInvite.roomCode)}?lang=${encodeURIComponent(defaultLang)}`);
+      navigate(
+        `/battle/${encodeURIComponent(latestInvite.roomCode)}?lang=${encodeURIComponent(
+          defaultLang
+        )}`
+      );
     }
   };
 
-  // Load friends
   useEffect(() => {
     let aborted = false;
     (async () => {
@@ -94,7 +119,6 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Create room using values from ChallengeModal
   async function createRoomWith({
     opponentUsername,
     difficulty,
@@ -133,6 +157,46 @@ const Dashboard: React.FC = () => {
       alert(message);
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function createTriviaRoom({
+    opponentUsername,
+  }: {
+    opponentUsername: string;
+  }) {
+    if (creatingTrivia) return;
+    if (!opponentUsername) {
+      alert("Please select a friend to invite");
+      return;
+    }
+    setCreatingTrivia(true);
+    try {
+      const durationSec = 180;
+
+      const res = await fetch("http://localhost:3001/trivia-room", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          durationSec,
+          allowUsername: opponentUsername,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || "Failed to create trivia room");
+      }
+
+      const data = await res.json();
+      setOpenTriviaSetup(false);
+
+      navigate(`/trivia/${encodeURIComponent(data.code)}`);
+    } catch {
+      alert("Could not create trivia room");
+    } finally {
+      setCreatingTrivia(false);
     }
   }
 
@@ -195,9 +259,9 @@ const Dashboard: React.FC = () => {
 
           <Grid item>
             <Button
-              component={Link}
-              to="/trivia"
               variant="contained"
+              onClick={() => setOpenTriviaSetup(true)}
+              disabled={creatingTrivia}
               sx={{
                 width: { xs: 480, sm: 480 },
                 height: { xs: 450, sm: 350 },
@@ -234,7 +298,6 @@ const Dashboard: React.FC = () => {
         </div>
       </Box>
 
-      {/* Challenge setup modal */}
       <ChallengeModal
         open={openSetup}
         onClose={() => setOpenSetup(false)}
@@ -247,13 +310,21 @@ const Dashboard: React.FC = () => {
         }
       />
 
-      {/* Incoming challenge dialog */}
-      <Dialog
-        open={openInviteDialog}
-        onClose={handleDecline}
-        fullWidth
-        maxWidth="xs"
-      >
+      <ChallengeModal
+        open={openTriviaSetup}
+        onClose={() => setOpenTriviaSetup(false)}
+        loading={creatingTrivia}
+        friends={friends.map(({ id, username }) => ({ id, username }))}
+        friendsLoading={friendsLoading}
+        friendsError={friendsErr}
+        mode="trivia"
+        onConfirm={({ opponentUsername }) => {
+          createTriviaRoom({ opponentUsername });
+        }}
+      />
+
+      {/* Coding battle invite dialog — reverted to original simple styling */}
+      <Dialog open={openInviteDialog} onClose={handleDecline} fullWidth maxWidth="xs">
         <DialogTitle>You've been challenged!</DialogTitle>
         <DialogContent>
           <Typography variant="h6" sx={{ mb: 1 }}>
@@ -264,14 +335,49 @@ const Dashboard: React.FC = () => {
           </Typography>
         </DialogContent>
         <DialogActions>
+          <Button onClick={handleDecline}>Decline</Button>
+          <Button variant="contained" onClick={handleAccept}>
+            Accept and Join
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Trivia invite dialog — also plain/default styling for consistency */}
+      <Dialog
+        open={openTriviaInviteDialog}
+        onClose={() => {
+          setOpenTriviaInviteDialog(false);
+          setTriviaInvite(null);
+        }}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>You've been invited to trivia!</DialogTitle>
+        <DialogContent>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            {triviaInvite?.inviterUsername} has challenged you to a trivia match!
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Do you want to accept the challenge and join the room now?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
           <Button
-            onClick={handleDecline}
+            onClick={() => {
+              setOpenTriviaInviteDialog(false);
+              setTriviaInvite(null);
+            }}
           >
             Decline
           </Button>
           <Button
             variant="contained"
-            onClick={handleAccept}
+            onClick={() => {
+              if (triviaInvite) {
+                setOpenTriviaInviteDialog(false);
+                navigate(`/trivia/${encodeURIComponent(triviaInvite.roomCode)}`);
+              }
+            }}
           >
             Accept and Join
           </Button>

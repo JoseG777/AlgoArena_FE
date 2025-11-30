@@ -31,6 +31,7 @@ type ChallengeModalProps = {
   /** Optional states to mirror the old Dashboard behavior. */
   friendsLoading?: boolean;
   friendsError?: string;
+  mode?: "coding" | "trivia";
 };
 
 const ChallengeModal: React.FC<ChallengeModalProps> = ({
@@ -42,6 +43,7 @@ const ChallengeModal: React.FC<ChallengeModalProps> = ({
   loading = false,
   friendsLoading = false,
   friendsError = "",
+  mode = "coding",
 }) => {
   const [selectedFriend, setSelectedFriend] = useState<string>(""); // stores a username
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
@@ -90,6 +92,15 @@ const ChallengeModal: React.FC<ChallengeModalProps> = ({
     ));
   }, [friendsLoading, friendsError, friends]);
 
+  const titleText =
+    mode === "trivia"
+      ? opponentUsername
+        ? `Trivia vs @${opponentUsername}`
+        : "Start a Trivia Battle"
+      : opponentUsername
+      ? `Challenge @${opponentUsername}`
+      : "Start a Coding Battle";
+
   return (
     <Dialog
       open={open}
@@ -112,7 +123,7 @@ const ChallengeModal: React.FC<ChallengeModalProps> = ({
       }}
     >
       <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.3rem" }}>
-        {opponentUsername ? `Challenge @${opponentUsername}` : "Start a Coding Battle"}
+        {titleText}
       </DialogTitle>
 
       <DialogContent
@@ -144,59 +155,66 @@ const ChallengeModal: React.FC<ChallengeModalProps> = ({
               >
                 {friendMenuItems}
               </Select>
-              <Typography variant="caption" sx={{ mt: 0.5, color: "#aaa" }}>
-                Pick a friend to invite.
-              </Typography>
             </FormControl>
           )}
 
-          <FormControl fullWidth variant="outlined">
-            <InputLabel id="difficulty-label" sx={{ color: "#bbb" }}>
-              Difficulty
-            </InputLabel>
-            <Select
-              labelId="difficulty-label"
-              value={difficulty}
-              label="Difficulty"
-              onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
-              sx={{
-                backgroundColor: "#2a2a45",
-                color: "white",
-                borderRadius: 2,
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#444",
-                },
-              }}
-            >
-              <MenuItem value="easy">Easy</MenuItem>
-              <MenuItem value="medium">Medium</MenuItem>
-              <MenuItem value="hard">Hard</MenuItem>
-            </Select>
-          </FormControl>
+          {mode === "coding" && (
+            <>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel id="difficulty-label" sx={{ color: "#bbb" }}>
+                  Difficulty
+                </InputLabel>
+                <Select
+                  labelId="difficulty-label"
+                  value={difficulty}
+                  label="Difficulty"
+                  onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
+                  sx={{
+                    backgroundColor: "#2a2a45",
+                    color: "white",
+                    borderRadius: 2,
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#444",
+                    },
+                  }}
+                >
+                  <MenuItem value="easy">Easy</MenuItem>
+                  <MenuItem value="medium">Medium</MenuItem>
+                  <MenuItem value="hard">Hard</MenuItem>
+                </Select>
+              </FormControl>
 
-          <FormControl fullWidth variant="outlined">
-            <InputLabel id="duration-label" sx={{ color: "#bbb" }}>
-              Duration
-            </InputLabel>
-            <Select
-              labelId="duration-label"
-              value={durationMin}
-              label="Duration"
-              onChange={(e) => setDurationMin(Number(e.target.value) as 5 | 10 | 15)}
-              sx={{
-                backgroundColor: "#2a2a45",
-                color: "white",
-                borderRadius: 2,
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#444",
-                },
-              }}
-            >
-              <MenuItem value={5}>5 minutes</MenuItem>
-              <MenuItem value={10}>10 minutes</MenuItem>
-              <MenuItem value={15}>15 minutes</MenuItem>
-            </Select>
-          </FormControl>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel id="duration-label" sx={{ color: "#bbb" }}>
+                  Duration
+                </InputLabel>
+                <Select
+                  labelId="duration-label"
+                  value={durationMin}
+                  label="Duration"
+                  onChange={(e) => setDurationMin(Number(e.target.value) as 5 | 10 | 15)}
+                  sx={{
+                    backgroundColor: "#2a2a45",
+                    color: "white",
+                    borderRadius: 2,
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#444",
+                    },
+                  }}
+                >
+                  <MenuItem value={5}>5 minutes</MenuItem>
+                  <MenuItem value={10}>10 minutes</MenuItem>
+                  <MenuItem value={15}>15 minutes</MenuItem>
+                </Select>
+              </FormControl>
+            </>
+          )}
+
+          {mode === "trivia" && (
+            <Typography variant="caption" sx={{ mt: 0.5, color: "#aaa" }}>
+              This is a 3-minute speed trivia battle.
+            </Typography>
+          )}
         </Stack>
       </DialogContent>
 

@@ -1,12 +1,23 @@
-import { Box, Button, Typography, Paper, LinearProgress, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  Paper,
+  LinearProgress,
+  CircularProgress,
+} from "@mui/material";
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import AlgorithmVortex from "../components/AlgorithmVortex";
+import { socket } from "../lib/socket";
 
 interface Question {
   question: string;
-  options: string[];
-  correctAnswer: string;
+  options?: string[];
+  correctAnswer?: string;
+  correct_answer?: string;
+  incorrect_answers?: string[];
   category?: string;
   difficulty?: string;
 }
@@ -19,11 +30,76 @@ const TriviaPage: React.FC = () => {
   const [score, setScore] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
 
-  // --- Fetch questions once ---
+  const [serverScore, setServerScore] = useState<number | null>(null);
+  const [roomJoined, setRoomJoined] = useState(false);
+  const [roomStarted, setRoomStarted] = useState(false);
+  const [questionsLoaded, setQuestionsLoaded] = useState(false);
+
+  const navigate = useNavigate();
+  const { code } = useParams<{ code: string }>();
+  const roomCode = code || "";
+
   useEffect(() => {
+    if (!socket.connected) socket.connect();
+  }, []);
+
+  useEffect(() => {
+    if (!roomCode) {
+      navigate("/dash-board");
+      return;
+    }
+
+    socket.emit(
+      "joinRoom",
+      roomCode,
+      (resp: {
+        success?: boolean;
+        error?: string;
+        members?: string[];
+        timeLeft?: number | null;
+        started?: boolean;
+      }) => {
+        if (!resp?.success) {
+          alert(resp?.error || "Failed to join trivia room");
+          navigate("/dash-board");
+          return;
+        }
+        setRoomJoined(true);
+        if (resp.started) {
+          setRoomStarted(true);
+        }
+      }
+    );
+
+    const onBattleStarted = () => {
+      setRoomStarted(true);
+    };
+
+    const onRoomClosed = () => {
+      if (!showPopup) {
+        navigate("/dash-board");
+      }
+    };
+
+    socket.on("battleStarted", onBattleStarted);
+    socket.on("roomClosed", onRoomClosed);
+
+    return () => {
+      socket.emit("leaveRoom", roomCode);
+      socket.off("battleStarted", onBattleStarted);
+      socket.off("roomClosed", onRoomClosed);
+    };
+  }, [roomCode, navigate, showPopup]);
+
+  useEffect(() => {
+    if (!roomStarted || questionsLoaded) return;
+
     const fetchQuestions = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/trivia");
+        const res = await axios.get("http://localhost:3001/trivia", {
+          params: { roomCode },
+          withCredentials: true,
+        });
         if (res.data.success && res.data.data.length > 0) {
           setQuestions(res.data.data);
         }
@@ -31,35 +107,136 @@ const TriviaPage: React.FC = () => {
         console.error("Error fetching trivia:", err);
       } finally {
         setLoading(false);
+        setQuestionsLoaded(true);
       }
     };
     fetchQuestions();
-  }, []);
+  }, [roomStarted, questionsLoaded, roomCode]);
+
+  useEffect(() => {
+    if (showPopup) {
+      const timeout = setTimeout(() => {
+        navigate("/dash-board");
+      }, 4000);
+      return () => clearTimeout(timeout);
+    }
+  }, [showPopup, navigate]);
 
   const currentQuestion = questions[currentIndex];
 
-  // --- Stable memoized options ---
+  const correctForCurrent = useMemo(() => {
+    if (!currentQuestion) return undefined;
+    return currentQuestion.correctAnswer ?? currentQuestion.correct_answer;
+  }, [currentQuestion]);
+
   const options = useMemo(() => {
-    return currentQuestion?.options || [];
+    if (!currentQuestion) return [];
+
+    if (currentQuestion.options && currentQuestion.options.length > 0) {
+      return currentQuestion.options;
+    }
+
+    const baseCorrect =
+      currentQuestion.correctAnswer ?? currentQuestion.correct_answer;
+    const incorrect = currentQuestion.incorrect_answers || [];
+    const arr = [baseCorrect, ...incorrect].filter(
+      (v): v is string => typeof v === "string" && v.length > 0
+    );
+
+    return arr;
   }, [currentQuestion]);
 
   const handleAnswerSelect = (option: string) => {
+    if (!currentQuestion || !correctForCurrent) return;
+
+    const wasCorrectBefore =
+      selectedOption !== null && selectedOption === correctForCurrent;
+    const willBeCorrect = option === correctForCurrent;
+
     setSelectedOption(option);
-    if (option === currentQuestion.correctAnswer) {
-      setScore((prev) => prev + 1);
-    }
+    setScore((prev) => {
+      let next = prev;
+      if (wasCorrectBefore && !willBeCorrect) {
+        next -= 1;
+      } else if (!wasCorrectBefore && willBeCorrect) {
+        next += 1;
+      }
+      if (next < 0) next = 0;
+      return next;
+    });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex((prev) => prev + 1);
       setSelectedOption(null);
     } else {
+      try {
+        if (roomCode) {
+          const res = await axios.post(
+            "http://localhost:3001/trivia/submit",
+            {
+              roomCode,
+              correctCount: score,
+              totalQuestions: questions.length,
+            },
+            { withCredentials: true }
+          );
+          if (res.data && typeof res.data.score === "number") {
+            setServerScore(res.data.score);
+          } else {
+            setServerScore(score * 10);
+          }
+        } else {
+          setServerScore(score * 10);
+        }
+      } catch (err) {
+        console.error("Error submitting trivia results:", err);
+        setServerScore(score * 10);
+      }
+
       setShowPopup(true);
     }
   };
 
-  // --- Loading state ---
+  if (!roomJoined || !roomStarted) {
+    return (
+      <Box
+        sx={{
+          width: "100vw",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          background: "radial-gradient(circle at center, #03045E 0%, #000 100%)",
+          color: "white",
+          overflow: "hidden",
+        }}
+      >
+        <Box sx={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+          <AlgorithmVortex />
+        </Box>
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1,
+          }}
+        >
+          <CircularProgress />
+          <Typography sx={{ mt: 2, fontWeight: "bold" }}>
+            Waiting for your opponent to join…
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   if (loading) {
     return (
       <Box
@@ -77,7 +254,6 @@ const TriviaPage: React.FC = () => {
     );
   }
 
-  // --- No questions fallback ---
   if (!currentQuestion) {
     return (
       <Box
@@ -97,7 +273,6 @@ const TriviaPage: React.FC = () => {
     );
   }
 
-  // --- UI ---
   return (
     <Box
       sx={{
@@ -243,10 +418,13 @@ const TriviaPage: React.FC = () => {
               🎯 Results
             </Typography>
             <Typography variant="h6" sx={{ mb: 1 }}>
-              Score: {score} / {questions.length}
+              Correct: {score} / {questions.length}
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 3 }}>
+              Battle Points: {serverScore ?? score * 10}
             </Typography>
             <Typography variant="body1" sx={{ mb: 3, color: "#A0A0A0" }}>
-              Great job! Keep improving ⚡
+              Speed and accuracy both matter. Nice work ⚡
             </Typography>
             <Button
               variant="contained"
@@ -256,7 +434,7 @@ const TriviaPage: React.FC = () => {
                 borderRadius: "25px",
                 px: 4,
               }}
-              onClick={() => window.location.reload()}
+              onClick={() => navigate("/dash-board")}
             >
               Continue
             </Button>
