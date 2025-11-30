@@ -1,15 +1,15 @@
 import React from "react";
 import { Box, Typography, Button, Paper, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import NavBar from "../../components/NavBar"; 
+import NavBar from "../../components/NavBar";
 import { useInvitations } from "../../context/InvitationContext";
-import AlgorithmVortex from "../../components/AlgorithmVortex"; 
+import AlgorithmVortex from "../../components/AlgorithmVortex";
 
 const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { invitations, removeInvitation } = useInvitations();
+  const { invitations, triviaInvites, removeInvitation, removeTriviaInvitation } = useInvitations();
 
-  const defaultLang = "typescript"; 
+  const defaultLang = "typescript";
 
   const handleJoinBattle = (roomCode: string) => {
     removeInvitation(roomCode);
@@ -18,7 +18,16 @@ const NotificationsPage: React.FC = () => {
 
   const handleDismiss = (roomCode: string) => {
     removeInvitation(roomCode);
-  }
+  };
+
+  const handleJoinTrivia = (roomCode: string) => {
+    removeTriviaInvitation(roomCode);
+    navigate(`/trivia/${encodeURIComponent(roomCode)}`);
+  };
+
+  const handleDismissTrivia = (roomCode: string) => {
+    removeTriviaInvitation(roomCode);
+  };
 
   return (
     <Box
@@ -42,10 +51,10 @@ const NotificationsPage: React.FC = () => {
       </Box>
 
       <NavBar />
-      
+
       <Box
         sx={{
-          paddingTop: "165px", 
+          paddingTop: "165px",
           minheight: "100vh",
           position: "relative",
           zIndex: 1,
@@ -56,76 +65,129 @@ const NotificationsPage: React.FC = () => {
           alignItems: "center",
         }}
       >
-        <Typography 
-            variant="h3" 
-            gutterBottom 
-            sx={{
-                fontSize: { xs: '2rem', sm: '3rem' },
-                fontWeight: '900',
-                color: '#60a5fa',
-                mb: 4,
-                textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-            }}
+        <Typography
+          variant="h3"
+          gutterBottom
+          sx={{
+            fontSize: { xs: "2rem", sm: "3rem" },
+            fontWeight: "900",
+            color: "#60a5fa",
+            mb: 4,
+            textShadow: "0 0 10px rgba(96, 165, 250, 0.5)",
+          }}
         >
           Pending Battle Invitations
         </Typography>
-        <Divider sx={{ mb: 4, width: '100%', bgcolor: 'rgba(255,255,255,0.2)' }} />
+        <Divider sx={{ mb: 4, width: "100%", bgcolor: "rgba(255,255,255,0.2)" }} />
 
-        {invitations.length === 0 ? (
+        {invitations.length === 0 && triviaInvites.length === 0 ? (
           <Typography variant="h5" color="#94a3b8" sx={{ mt: 4 }}>
             You have no pending battle invitations.
           </Typography>
         ) : (
-          <Box sx={{ display: 'grid', gap: 3, width: '100%' }}>
+          <Box sx={{ display: "grid", gap: 3, width: "100%" }}>
             {invitations.map((invite, index) => (
-              <Paper 
-                key={invite.roomCode} 
+              <Paper
+                key={invite.roomCode}
                 elevation={6}
-                sx={{ 
-                  p: 3, 
-                  backgroundColor: index % 2 === 0 ? '#1e293b' : '#141e2f', 
-                  borderRadius: 2, 
-                  display: 'flex', 
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  borderLeft: '4px solid #38bdf8',
-                  transition: 'background-color 0.3s',
-                  '&:hover': {
-                      backgroundColor: '#283549',
-                  }
+                sx={{
+                  p: 3,
+                  backgroundColor: index % 2 === 0 ? "#1e293b" : "#141e2f",
+                  borderRadius: 2,
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  borderLeft: "4px solid #38bdf8",
+                  transition: "background-color 0.3s",
+                  "&:hover": {
+                    backgroundColor: "#283549",
+                  },
                 }}
               >
                 <Box sx={{ mb: { xs: 2, sm: 0 } }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#f1f5f9' }}>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "#f1f5f9" }}>
                     Challenge from: {invite.inviterUsername}
                   </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                        variant="outlined"
-                        onClick={() => handleDismiss(invite.roomCode)}
-                        sx={{ 
-                            color: '#ccc', 
-                            borderColor: '#ccc',
-                            '&:hover': {
-                                backgroundColor: 'rgba(204, 204, 204, 0.1)',
-                                borderColor: '#fff'
-                            }
-                        }}
-                    >
-                        Dismiss
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={() => handleJoinBattle(invite.roomCode)}
-                        sx={{
-                            backgroundColor: "#38bdf8",
-                            "&:hover": { backgroundColor: "#0ea5e9" },
-                        }}
-                    >
-                        Accept & Join
-                    </Button>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleDismiss(invite.roomCode)}
+                    sx={{
+                      color: "#ccc",
+                      borderColor: "#ccc",
+                      "&:hover": {
+                        backgroundColor: "rgba(204, 204, 204, 0.1)",
+                        borderColor: "#fff",
+                      },
+                    }}
+                  >
+                    Dismiss
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleJoinBattle(invite.roomCode)}
+                    sx={{
+                      backgroundColor: "#38bdf8",
+                      "&:hover": { backgroundColor: "#0ea5e9" },
+                    }}
+                  >
+                    Accept & Join
+                  </Button>
+                </Box>
+              </Paper>
+            ))}
+
+            {triviaInvites.map((invite, index) => (
+              <Paper
+                key={invite.roomCode}
+                elevation={6}
+                sx={{
+                  p: 3,
+                  backgroundColor: index % 2 === 0 ? "#1e293b" : "#141e2f",
+                  borderRadius: 2,
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  borderLeft: "4px solid #fbbf24",
+                  transition: "background-color 0.3s",
+                  "&:hover": {
+                    backgroundColor: "#283549",
+                  },
+                }}
+              >
+                <Box sx={{ mb: { xs: 2, sm: 0 } }}>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "#f1f5f9" }}>
+                    Trivia challenge from: {invite.inviterUsername}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleDismissTrivia(invite.roomCode)}
+                    sx={{
+                      color: "#ccc",
+                      borderColor: "#ccc",
+                      "&:hover": {
+                        backgroundColor: "rgba(204, 204, 204, 0.1)",
+                        borderColor: "#fff",
+                      },
+                    }}
+                  >
+                    Dismiss
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleJoinTrivia(invite.roomCode)}
+                    sx={{
+                      backgroundColor: "#fbbf24",
+                      "&:hover": { backgroundColor: "#f59e0b" },
+                    }}
+                  >
+                    Accept & Join
+                  </Button>
                 </Box>
               </Paper>
             ))}
