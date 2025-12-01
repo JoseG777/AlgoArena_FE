@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  Typography,
-  Paper,
-  LinearProgress,
-  CircularProgress,
-} from "@mui/material";
+import { Box, Button, Typography, Paper, LinearProgress, CircularProgress } from "@mui/material";
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
@@ -152,8 +145,7 @@ const TriviaPage: React.FC = () => {
       return currentQuestion.options;
     }
 
-    const baseCorrect =
-      currentQuestion.correctAnswer ?? currentQuestion.correct_answer;
+    const baseCorrect = currentQuestion.correctAnswer ?? currentQuestion.correct_answer;
     const incorrect = currentQuestion.incorrect_answers || [];
     const arr = [baseCorrect, ...incorrect].filter(
       (v): v is string => typeof v === "string" && v.length > 0
@@ -165,8 +157,7 @@ const TriviaPage: React.FC = () => {
   const handleAnswerSelect = (option: string) => {
     if (!currentQuestion || !correctForCurrent) return;
 
-    const wasCorrectBefore =
-      selectedOption !== null && selectedOption === correctForCurrent;
+    const wasCorrectBefore = selectedOption !== null && selectedOption === correctForCurrent;
     const willBeCorrect = option === correctForCurrent;
 
     setSelectedOption(option);

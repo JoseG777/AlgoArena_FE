@@ -98,8 +98,8 @@ const ChallengeModal: React.FC<ChallengeModalProps> = ({
         ? `Trivia vs @${opponentUsername}`
         : "Start a Trivia Battle"
       : opponentUsername
-      ? `Challenge @${opponentUsername}`
-      : "Start a Coding Battle";
+        ? `Challenge @${opponentUsername}`
+        : "Start a Coding Battle";
 
   return (
     <Dialog
@@ -122,9 +122,7 @@ const ChallengeModal: React.FC<ChallengeModalProps> = ({
         }
       }}
     >
-      <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.3rem" }}>
-        {titleText}
-      </DialogTitle>
+      <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.3rem" }}>{titleText}</DialogTitle>
 
       <DialogContent
         dividers

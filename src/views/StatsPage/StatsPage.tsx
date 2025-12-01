@@ -41,7 +41,7 @@ const StatsPage: React.FC = () => {
   const [err, setErr] = useState<string>("");
   const [view, setView] = useState<"global" | "mystats">("global");
   const [myStats, setMyStats] = useState<StatsResponse | null>(null);
-  const [myRank, setMyRank] = useState<number | null>(null);
+  // const [myRank, setMyRank] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -66,7 +66,7 @@ const StatsPage: React.FC = () => {
           credentials: "include",
         });
         const { rank } = await rankRes.json();
-        setMyRank(rank);
+        // setMyRank(rank);
 
         let finalList = [...top5];
 
@@ -79,9 +79,7 @@ const StatsPage: React.FC = () => {
           });
         } else {
           // Replace my username in the top 5 with "You"
-          finalList = finalList.map((u) =>
-            u.rank === rank ? { ...u, username: "You" } : u
-          );
+          finalList = finalList.map((u) => (u.rank === rank ? { ...u, username: "You" } : u));
         }
 
         setLeaders(finalList);
@@ -101,20 +99,28 @@ const StatsPage: React.FC = () => {
     <Box
       sx={{
         width: "100vw",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
+        height: "100vh",
         position: "fixed",
         top: 0,
         left: 0,
         backgroundColor: "#121729ff",
         color: "white",
-        overflow: "hidden",
+        overflow: "hidden", // background container doesn't scroll
       }}
     >
       <AlgorithmVortex />
 
-      <Box sx={{ position: "relative", zIndex: 2 }}>
+      {/* Scrollable content */}
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 2,
+          height: "100%",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <NavBar />
 
         <Typography
@@ -167,6 +173,7 @@ const StatsPage: React.FC = () => {
               overflow: "hidden",
               boxShadow: "0 0 20px rgba(30,58,138,0.3)",
               mx: "auto",
+              mb: 6,
             }}
           >
             <Table>
@@ -184,9 +191,7 @@ const StatsPage: React.FC = () => {
                     key={player.rank}
                     sx={{
                       backgroundColor:
-                        player.username === "You"
-                          ? "rgba(56,189,248,0.25)"
-                          : "rgba(30,41,59,0.5)",
+                        player.username === "You" ? "rgba(56,189,248,0.25)" : "rgba(30,41,59,0.5)",
                     }}
                   >
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>{player.rank}</TableCell>
@@ -217,6 +222,7 @@ const StatsPage: React.FC = () => {
               borderRadius: 3,
               p: 4,
               mx: "auto",
+              mb: 6,
             }}
           >
             <Card
@@ -282,17 +288,15 @@ const StatsPage: React.FC = () => {
                       <TableCell sx={{ color: "white" }}>
                         {new Date(m.startedAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell sx={{ color: "white" }}>
-                        {m.opponentUsername ?? "—"}
-                      </TableCell>
+                      <TableCell sx={{ color: "white" }}>{m.opponentUsername ?? "—"}</TableCell>
                       <TableCell
                         sx={{
                           color:
                             m.result === "win"
                               ? "#4ade80"
                               : m.result === "loss"
-                              ? "#f87171"
-                              : "#facc15",
+                                ? "#f87171"
+                                : "#facc15",
                           fontWeight: "bold",
                           textTransform: "uppercase",
                         }}
@@ -305,7 +309,6 @@ const StatsPage: React.FC = () => {
                     </TableRow>
                   ))}
                 </TableBody>
-
               </Table>
             </TableContainer>
           </Box>

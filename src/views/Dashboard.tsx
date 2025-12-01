@@ -36,9 +36,10 @@ const Dashboard: React.FC = () => {
   const [friendsLoading, setFriendsLoading] = useState<boolean>(true);
   const [friendsErr, setFriendsErr] = useState<string>("");
 
-  const [latestInvite, setLatestInvite] = useState<
-    typeof useInvitations extends () => { invitations: (infer T)[] } ? T | null : null
-  >(null);
+  const [latestInvite, setLatestInvite] =
+    useState<typeof useInvitations extends () => { invitations: (infer T)[] } ? T | null : null>(
+      null
+    );
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
   const { invitations, removeInvitation } = useInvitations();
 
@@ -160,11 +161,7 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  async function createTriviaRoom({
-    opponentUsername,
-  }: {
-    opponentUsername: string;
-  }) {
+  async function createTriviaRoom({ opponentUsername }: { opponentUsername: string }) {
     if (creatingTrivia) return;
     if (!opponentUsername) {
       alert("Please select a friend to invite");
