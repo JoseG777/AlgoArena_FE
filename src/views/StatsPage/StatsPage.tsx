@@ -23,17 +23,6 @@ type Leader = {
   points: number;
 };
 
-const placeholderLeaders: Leader[] = [
-  { rank: 1, username: "Jose", points: 1200 },
-  { rank: 2, username: "Prabodh", points: 1100 },
-  { rank: 3, username: "William", points: 1050 },
-  { rank: 4, username: "Charles", points: 1000 },
-  { rank: 5, username: "Darshan", points: 950 },
-  { rank: 6, username: "AJ", points: 820 },
-  { rank: 7, username: "Grace", points: 790 },
-  { rank: 8, username: "Joe", points: 780 },
-];
-
 type StatsItem = {
   id: string;
   startedAt: string;
@@ -48,42 +37,56 @@ type StatsResponse = {
 };
 
 const StatsPage: React.FC = () => {
-  const [leaders, setLeaders] = useState<Leader[]>(placeholderLeaders);
+  const [leaders, setLeaders] = useState<Leader[]>([]);
   const [err, setErr] = useState<string>("");
   const [view, setView] = useState<"global" | "mystats">("global");
-
   const [myStats, setMyStats] = useState<StatsResponse | null>(null);
+  const [myRank, setMyRank] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("http://localhost:3001/me/matches", {
+        // Load my stats
+        const statsRes = await fetch("http://localhost:3001/me/matches", {
           credentials: "include",
         });
-        if (!res.ok) {
-          const e = await res.json().catch(() => ({}));
-          throw new Error(e?.error || "Failed to load Stats");
+        if (!statsRes.ok) throw new Error("Failed to load Stats");
+        const statsJson: StatsResponse = await statsRes.json();
+        setMyStats(statsJson);
+
+        // Load leaderboard top 5
+        const lbRes = await fetch("http://localhost:3001/leaderboard/top", {
+          credentials: "include",
+        });
+        if (!lbRes.ok) throw new Error("Failed to load leaderboard");
+        const { top5 } = await lbRes.json();
+
+        // Load my rank
+        const rankRes = await fetch("http://localhost:3001/leaderboard/rank", {
+          credentials: "include",
+        });
+        const { rank } = await rankRes.json();
+        setMyRank(rank);
+
+        let finalList = [...top5];
+
+        // Add myself at bottom if I'm not in top 5
+        if (!top5.some((u: any) => u.rank === rank)) {
+          finalList.push({
+            rank: rank,
+            username: "You",
+            points: statsJson.totalPoints,
+          });
+        } else {
+          // Replace my username in the top 5 with "You"
+          finalList = finalList.map((u) =>
+            u.rank === rank ? { ...u, username: "You" } : u
+          );
         }
-        const json: StatsResponse = await res.json();
 
-        setMyStats(json);
-
-        if (json.matches && json.matches.length > 0) {
-          const myPoints = json.totalPoints || 0;
-          const myUsername = "You";
-
-          const updated = [
-            { rank: 0, username: myUsername, points: myPoints },
-            ...placeholderLeaders,
-          ]
-            .sort((a, b) => b.points - a.points)
-            .map((p, i) => ({ ...p, rank: i + 1 }));
-
-          setLeaders(updated);
-        }
-      } catch (e: unknown) {
-        if (e instanceof Error) setErr(e.message);
-        else setErr("Error");
+        setLeaders(finalList);
+      } catch (e: any) {
+        setErr(e.message || "Error");
       }
     })();
   }, []);
@@ -174,13 +177,16 @@ const StatsPage: React.FC = () => {
                   <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>POINTS</TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {leaders.map((player) => (
                   <TableRow
                     key={player.rank}
                     sx={{
                       backgroundColor:
-                        player.rank === 1 ? "rgba(79,70,229,0.3)" : "rgba(30,41,59,0.5)",
+                        player.username === "You"
+                          ? "rgba(56,189,248,0.25)"
+                          : "rgba(30,41,59,0.5)",
                     }}
                   >
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>{player.rank}</TableCell>
@@ -202,6 +208,7 @@ const StatsPage: React.FC = () => {
           </TableContainer>
         )}
 
+        {/* MY STATS VIEW */}
         {view === "mystats" && myStats && (
           <Box
             sx={{
@@ -210,7 +217,6 @@ const StatsPage: React.FC = () => {
               borderRadius: 3,
               p: 4,
               mx: "auto",
-              boxShadow: "0 0 25px rgba(30,58,138,0.4)",
             }}
           >
             <Card
@@ -219,7 +225,6 @@ const StatsPage: React.FC = () => {
                 borderRadius: 3,
                 mb: 4,
                 p: 2,
-                boxShadow: "0 0 15px rgba(30,58,138,0.2)",
               }}
             >
               <CardContent>
@@ -252,6 +257,7 @@ const StatsPage: React.FC = () => {
               </CardContent>
             </Card>
 
+            {/* MATCH HISTORY */}
             <Typography
               variant="h6"
               sx={{ mb: 2, fontWeight: "bold", color: "#60a5fa", textAlign: "center" }}
@@ -269,21 +275,24 @@ const StatsPage: React.FC = () => {
                     <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>POINTS</TableCell>
                   </TableRow>
                 </TableHead>
+
                 <TableBody>
                   {myStats.matches.map((m) => (
                     <TableRow key={m.id}>
                       <TableCell sx={{ color: "white" }}>
                         {new Date(m.startedAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell sx={{ color: "white" }}>{m.opponentUsername ?? "—"}</TableCell>
+                      <TableCell sx={{ color: "white" }}>
+                        {m.opponentUsername ?? "—"}
+                      </TableCell>
                       <TableCell
                         sx={{
                           color:
                             m.result === "win"
                               ? "#4ade80"
                               : m.result === "loss"
-                                ? "#f87171"
-                                : "#facc15",
+                              ? "#f87171"
+                              : "#facc15",
                           fontWeight: "bold",
                           textTransform: "uppercase",
                         }}
@@ -296,6 +305,7 @@ const StatsPage: React.FC = () => {
                     </TableRow>
                   ))}
                 </TableBody>
+
               </Table>
             </TableContainer>
           </Box>
