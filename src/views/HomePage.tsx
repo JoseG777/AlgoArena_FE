@@ -174,29 +174,6 @@ const HomePage: React.FC = () => {
             </Paper>
           </Grid>
         </Grid>
-
-        {/* Activity Feed */}
-        <Box
-          sx={{
-            mt: 4,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            p: 2,
-            borderRadius: 2,
-            border: "1px solid rgba(76, 201, 240, 0.3)",
-            boxShadow: "0 0 10px rgba(76, 201, 240, 0.2)",
-            width: "80%",
-            maxWidth: 600,
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <Typography sx={{ color: "#4CC9F0", fontWeight: 600 }}>
-            ⚡ Sarah just won a coding match in 3 minutes!
-          </Typography>
-          <Typography sx={{ color: "#4CC9F0", fontWeight: 600 }}>
-            💥 John climbed to Rank #5 in Trivia Arena.
-          </Typography>
-        </Box>
       </Box>
     </Box>
   );
