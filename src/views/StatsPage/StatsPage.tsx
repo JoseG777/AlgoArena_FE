@@ -23,17 +23,6 @@ type Leader = {
   points: number;
 };
 
-const placeholderLeaders: Leader[] = [
-  { rank: 1, username: "Jose", points: 1200 },
-  { rank: 2, username: "Prabodh", points: 1100 },
-  { rank: 3, username: "William", points: 1050 },
-  { rank: 4, username: "Charles", points: 1000 },
-  { rank: 5, username: "Darshan", points: 950 },
-  { rank: 6, username: "AJ", points: 820 },
-  { rank: 7, username: "Grace", points: 790 },
-  { rank: 8, username: "Joe", points: 780 },
-];
-
 type StatsItem = {
   id: string;
   startedAt: string;
@@ -48,42 +37,53 @@ type StatsResponse = {
 };
 
 const StatsPage: React.FC = () => {
-  const [leaders, setLeaders] = useState<Leader[]>(placeholderLeaders);
+  const [leaders, setLeaders] = useState<Leader[]>([]);
   const [err, setErr] = useState<string>("");
   const [view, setView] = useState<"global" | "mystats">("global");
-
   const [myStats, setMyStats] = useState<StatsResponse | null>(null);
+  // const [myRank, setMyRank] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/me/matches`, {
+        const statsRes = await fetch(`${import.meta.env.VITE_API_URL}/me/matches`, {
           credentials: "include",
         });
-        if (!res.ok) {
-          const e = await res.json().catch(() => ({}));
-          throw new Error(e?.error || "Failed to load Stats");
+        if (!statsRes.ok) throw new Error("Failed to load Stats");
+        const statsJson: StatsResponse = await statsRes.json();
+        setMyStats(statsJson);
+
+        // Load leaderboard top 5
+        const lbRes = await fetch(`${import.meta.env.VITE_API_URL}/leaderboard/top`, {
+          credentials: "include",
+        });
+        if (!lbRes.ok) throw new Error("Failed to load leaderboard");
+        const { top5 } = await lbRes.json();
+
+        // Load my rank
+        const rankRes = await fetch(`${import.meta.env.VITE_API_URL}/leaderboard/rank`, {
+          credentials: "include",
+        });
+        const { rank } = await rankRes.json();
+        // setMyRank(rank);
+
+        let finalList = [...top5];
+
+        // Add myself at bottom if I'm not in top 5
+        if (!top5.some((u: any) => u.rank === rank)) {
+          finalList.push({
+            rank: rank,
+            username: "You",
+            points: statsJson.totalPoints,
+          });
+        } else {
+          // Replace my username in the top 5 with "You"
+          finalList = finalList.map((u) => (u.rank === rank ? { ...u, username: "You" } : u));
         }
-        const json: StatsResponse = await res.json();
 
-        setMyStats(json);
-
-        if (json.matches && json.matches.length > 0) {
-          const myPoints = json.totalPoints || 0;
-          const myUsername = "You";
-
-          const updated = [
-            { rank: 0, username: myUsername, points: myPoints },
-            ...placeholderLeaders,
-          ]
-            .sort((a, b) => b.points - a.points)
-            .map((p, i) => ({ ...p, rank: i + 1 }));
-
-          setLeaders(updated);
-        }
-      } catch (e: unknown) {
-        if (e instanceof Error) setErr(e.message);
-        else setErr("Error");
+        setLeaders(finalList);
+      } catch (e: any) {
+        setErr(e.message || "Error");
       }
     })();
   }, []);
@@ -98,9 +98,7 @@ const StatsPage: React.FC = () => {
     <Box
       sx={{
         width: "100vw",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
+        height: "100vh",
         position: "fixed",
         top: 0,
         left: 0,
@@ -111,7 +109,17 @@ const StatsPage: React.FC = () => {
     >
       <AlgorithmVortex />
 
-      <Box sx={{ position: "relative", zIndex: 2 }}>
+      {/* Scrollable content */}
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 2,
+          height: "100%",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <NavBar />
 
         <Typography
@@ -164,6 +172,7 @@ const StatsPage: React.FC = () => {
               overflow: "hidden",
               boxShadow: "0 0 20px rgba(30,58,138,0.3)",
               mx: "auto",
+              mb: 6,
             }}
           >
             <Table>
@@ -174,13 +183,14 @@ const StatsPage: React.FC = () => {
                   <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>POINTS</TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {leaders.map((player) => (
                   <TableRow
                     key={player.rank}
                     sx={{
                       backgroundColor:
-                        player.rank === 1 ? "rgba(79,70,229,0.3)" : "rgba(30,41,59,0.5)",
+                        player.username === "You" ? "rgba(56,189,248,0.25)" : "rgba(30,41,59,0.5)",
                     }}
                   >
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>{player.rank}</TableCell>
@@ -202,6 +212,7 @@ const StatsPage: React.FC = () => {
           </TableContainer>
         )}
 
+        {/* MY STATS VIEW */}
         {view === "mystats" && myStats && (
           <Box
             sx={{
@@ -210,7 +221,7 @@ const StatsPage: React.FC = () => {
               borderRadius: 3,
               p: 4,
               mx: "auto",
-              boxShadow: "0 0 25px rgba(30,58,138,0.4)",
+              mb: 6,
             }}
           >
             <Card
@@ -219,7 +230,6 @@ const StatsPage: React.FC = () => {
                 borderRadius: 3,
                 mb: 4,
                 p: 2,
-                boxShadow: "0 0 15px rgba(30,58,138,0.2)",
               }}
             >
               <CardContent>
@@ -252,6 +262,7 @@ const StatsPage: React.FC = () => {
               </CardContent>
             </Card>
 
+            {/* MATCH HISTORY */}
             <Typography
               variant="h6"
               sx={{ mb: 2, fontWeight: "bold", color: "#60a5fa", textAlign: "center" }}
@@ -269,6 +280,7 @@ const StatsPage: React.FC = () => {
                     <TableCell sx={{ color: "#93c5fd", fontWeight: "bold" }}>POINTS</TableCell>
                   </TableRow>
                 </TableHead>
+
                 <TableBody>
                   {myStats.matches.map((m) => (
                     <TableRow key={m.id}>
