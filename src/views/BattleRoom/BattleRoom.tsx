@@ -35,6 +35,8 @@ type BackendGraded = {
   compile_output: string;
   score: number;
   breakdown: Record<string, number | string>;
+  hasHiddenCase?: boolean;
+  hiddenCasePassed?: boolean;
 };
 
 type ApiError = { error?: string };
@@ -84,6 +86,9 @@ const BattleRoom: React.FC = () => {
   const [finalLeaderboard, setFinalLeaderboard] = useState<
     { username: string; score: number }[]
   >([]);
+
+  const [hasHiddenCase, setHasHiddenCase] = useState<boolean | null>(null);
+  const [hiddenCasePassed, setHiddenCasePassed] = useState<boolean | null>(null);
 
   const joinedRef = useRef<string>("");
 
@@ -225,6 +230,8 @@ const BattleRoom: React.FC = () => {
     setStderr("");
     setCompileOutput("");
     setScore(null);
+    setHasHiddenCase(null);
+    setHiddenCasePassed(null);
 
     try {
       const res = await fetch("http://localhost:3001/judge0/run", {
@@ -254,6 +261,19 @@ const BattleRoom: React.FC = () => {
       setStderr(d.stderr || "");
       setCompileOutput(d.compile_output || "");
       setScore(typeof d.score === "number" ? d.score : null);
+
+      if (typeof d.hasHiddenCase === "boolean") {
+        setHasHiddenCase(d.hasHiddenCase);
+      } else {
+        setHasHiddenCase(null);
+      }
+
+      if (typeof d.hiddenCasePassed === "boolean") {
+        setHiddenCasePassed(d.hiddenCasePassed);
+      } else {
+        setHiddenCasePassed(null);
+      }
+
       if (typeof d.score === "number") {
         socket.emit("updateScore", room.code, d.score);
       }
@@ -395,6 +415,19 @@ const BattleRoom: React.FC = () => {
                 <br />
               </>
             )}
+
+            {hasHiddenCase && (
+              <>
+                <strong>Hidden test case:</strong>{" "}
+                {hiddenCasePassed === null
+                  ? "Unknown"
+                  : hiddenCasePassed
+                  ? "PASS"
+                  : "FAIL"}
+                <br />
+              </>
+            )}
+
             {stdout && (
               <>
                 <strong>stdout:</strong>
