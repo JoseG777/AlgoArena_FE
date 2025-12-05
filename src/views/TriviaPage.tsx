@@ -27,6 +27,8 @@ type TriviaResultsPayload = {
     correctCount: number;
     totalQuestions: number;
   }[];
+  isTie: boolean;
+  youWon: boolean;
 };
 
 const TriviaPage: React.FC = () => {
@@ -42,6 +44,8 @@ const TriviaPage: React.FC = () => {
   const [roomStarted, setRoomStarted] = useState(false);
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
   const [waitingForResults, setWaitingForResults] = useState(false);
+  const [didWin, setDidWin] = useState<boolean | null>(null);
+  const [isTie, setIsTie] = useState<boolean>(false);
 
   const navigate = useNavigate();
   const { code } = useParams<{ code: string }>();
@@ -94,6 +98,8 @@ const TriviaPage: React.FC = () => {
       setServerScore(payload.yourScore);
       setScore(payload.yourCorrectCount);
       setWaitingForResults(false);
+      setDidWin(payload.youWon);
+      setIsTie(payload.isTie);
       setShowPopup(true);
     };
 
@@ -471,6 +477,24 @@ const TriviaPage: React.FC = () => {
             <Typography variant="h4" sx={{ fontWeight: "bold", color: "#4CC9F0", mb: 2 }}>
               🎯 Results
             </Typography>
+
+            {didWin !== null && (
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 2,
+                  fontWeight: "bold",
+                  color: isTie ? "#fbbf24" : didWin ? "#4ade80" : "#f87171",
+                }}
+              >
+                {isTie
+                  ? "It's a tie!"
+                  : didWin
+                  ? "You won this match!"
+                  : "You lost this one — good try!"}
+              </Typography>
+            )}
+
             <Typography variant="h6" sx={{ mb: 1 }}>
               Correct: {score} / {questions.length}
             </Typography>

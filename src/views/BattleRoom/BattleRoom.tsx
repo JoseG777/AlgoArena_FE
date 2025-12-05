@@ -35,9 +35,19 @@ type BackendGraded = {
   compile_output: string;
   score: number;
   breakdown: Record<string, number | string>;
+  hasHiddenCase?: boolean;
+  hiddenCasePassed?: boolean;
 };
 
 type ApiError = { error?: string };
+
+type CodingResultsPayload = {
+  roomCode: string;
+  yourScore: number;
+  leaderboard: { username: string; score: number }[];
+  isTie: boolean;
+  youWon: boolean;
+};
 
 function b64enc(s: string) {
   return btoa(unescape(encodeURIComponent(s)));
@@ -68,6 +78,17 @@ const BattleRoom: React.FC = () => {
   const [score, setScore] = useState<number | null>(null);
 
   const [finished, setFinished] = useState(false);
+
+  const [showResults, setShowResults] = useState(false);
+  const [finalScore, setFinalScore] = useState<number | null>(null);
+  const [didWin, setDidWin] = useState<boolean | null>(null);
+  const [isTie, setIsTie] = useState<boolean>(false);
+  const [finalLeaderboard, setFinalLeaderboard] = useState<
+    { username: string; score: number }[]
+  >([]);
+
+  const [hasHiddenCase, setHasHiddenCase] = useState<boolean | null>(null);
+  const [hiddenCasePassed, setHiddenCasePassed] = useState<boolean | null>(null);
 
   const joinedRef = useRef<string>("");
 
@@ -109,9 +130,11 @@ const BattleRoom: React.FC = () => {
 
     const onTimerUpdate = (p: { timeLeft: number }) => setTimeLeft(p.timeLeft);
     const onRoomClosed = () => {
-      alert("Room has been closed.");
       joinedRef.current = "";
-      navigate("/dash-board", { replace: true });
+      if (!showResults) {
+        alert("Room has been closed.");
+        navigate("/dash-board", { replace: true });
+      }
     };
     const onUserJoined = (p: { username: string }) => {
       setMembers((prev) => {
@@ -123,6 +146,16 @@ const BattleRoom: React.FC = () => {
     const onBattleStarted = (p: { timeLeft: number; expiresAt: string }) => {
       setStarted(true);
       setTimeLeft(p.timeLeft);
+    };
+
+    const onCodingResults = (payload: CodingResultsPayload) => {
+      if (!code || payload.roomCode !== code) return;
+      setFinalScore(payload.yourScore);
+      setScore(payload.yourScore);
+      setFinalLeaderboard(payload.leaderboard);
+      setDidWin(payload.youWon);
+      setIsTie(payload.isTie);
+      setShowResults(true);
     };
 
     const joinCurrentRoom = () => {
@@ -166,6 +199,7 @@ const BattleRoom: React.FC = () => {
     socket.on("userJoined", onUserJoined);
     socket.on("membersUpdated", onMembersUpdated);
     socket.on("battleStarted", onBattleStarted);
+    socket.on("codingResults", onCodingResults);
 
     if (socket.connected) joinCurrentRoom();
 
@@ -176,9 +210,10 @@ const BattleRoom: React.FC = () => {
       socket.off("userJoined", onUserJoined);
       socket.off("membersUpdated", onMembersUpdated);
       socket.off("battleStarted", onBattleStarted);
+      socket.off("codingResults", onCodingResults);
       joinedRef.current = "";
     };
-  }, [code, navigate]);
+  }, [code, navigate, showResults]);
 
   useEffect(() => {
     if (!room) return;
@@ -195,6 +230,8 @@ const BattleRoom: React.FC = () => {
     setStderr("");
     setCompileOutput("");
     setScore(null);
+    setHasHiddenCase(null);
+    setHiddenCasePassed(null);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/judge0/run`, {
@@ -224,6 +261,19 @@ const BattleRoom: React.FC = () => {
       setStderr(d.stderr || "");
       setCompileOutput(d.compile_output || "");
       setScore(typeof d.score === "number" ? d.score : null);
+
+      if (typeof d.hasHiddenCase === "boolean") {
+        setHasHiddenCase(d.hasHiddenCase);
+      } else {
+        setHasHiddenCase(null);
+      }
+
+      if (typeof d.hiddenCasePassed === "boolean") {
+        setHiddenCasePassed(d.hiddenCasePassed);
+      } else {
+        setHiddenCasePassed(null);
+      }
+
       if (typeof d.score === "number") {
         socket.emit("updateScore", room.code, d.score);
       }
@@ -247,6 +297,8 @@ const BattleRoom: React.FC = () => {
       </div>
     );
   }
+
+  const effectiveFinalScore = finalScore ?? score ?? 0;
 
   return (
     <div className="aa-root">
@@ -363,6 +415,19 @@ const BattleRoom: React.FC = () => {
                 <br />
               </>
             )}
+
+            {hasHiddenCase && (
+              <>
+                <strong>Hidden test case:</strong>{" "}
+                {hiddenCasePassed === null
+                  ? "Unknown"
+                  : hiddenCasePassed
+                  ? "PASS"
+                  : "FAIL"}
+                <br />
+              </>
+            )}
+
             {stdout && (
               <>
                 <strong>stdout:</strong>
@@ -389,6 +454,60 @@ const BattleRoom: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {showResults && (
+        <div className="aa-results-overlay">
+          <div className="aa-results-card">
+            <h2 className="aa-results-title">Match Results</h2>
+
+            {didWin !== null && (
+              <div
+                className="aa-results-status"
+                style={{
+                  color: isTie ? "#fbbf24" : didWin ? "#4ade80" : "#f87171",
+                }}
+              >
+                {isTie
+                  ? "It's a tie!"
+                  : didWin
+                  ? "You won this match!"
+                  : "You lost this one — good try!"}
+              </div>
+            )}
+
+            <div style={{ marginBottom: 8 }}>
+              <strong>Your Points:</strong> {effectiveFinalScore}
+            </div>
+
+            {finalLeaderboard.length > 0 && (
+              <div className="aa-results-leaderboard">
+                <div className="aa-results-leaderboard-title">Results</div>
+                {finalLeaderboard.map((m, idx) => (
+                  <div key={m.username + idx} className="aa-results-leader-row">
+                    <span>
+                      {idx + 1}. {m.username}
+                    </span>
+                    <span>{m.score}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              className="aa-run-btn aa-results-done"
+              onClick={() => {
+                if (room) {
+                  socket.emit("leaveRoom", room.code);
+                }
+                setShowResults(false);
+                navigate("/dash-board", { replace: true });
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

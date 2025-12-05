@@ -213,3 +213,66 @@
     min-width: 100%;
   }
 }
+
+/* Results popup overlay */
+.aa-results-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* Results popup card */
+.aa-results-card {
+  width: 360px;
+  padding: 24px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(0, 18, 51, 0.98) 0%, rgba(3, 4, 94, 0.98) 100%);
+  color: #ffffff;
+  box-shadow: 0 0 30px rgba(76, 201, 240, 0.5);
+  text-align: center;
+}
+
+/* Results title */
+.aa-results-title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #4cc9f0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Results status text (win/lose/tie) */
+.aa-results-status {
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+/* Leaderboard wrapper */
+.aa-results-leaderboard {
+  margin-top: 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+/* Leaderboard header */
+.aa-results-leaderboard-title {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+/* Leaderboard row */
+.aa-results-leader-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+/* "Done" button layout */
+.aa-results-done {
+  margin-top: 20px;
+  width: 100%;
+}
