@@ -4,8 +4,8 @@ import Editor from "@monaco-editor/react";
 import { socket } from "../../lib/socket";
 import "./BattleRoom.css";
 
-type Lang = "typescript" | "python";
-const LANGUAGE_IDS: Record<Lang, number> = { typescript: 74, python: 71 };
+type Lang = "typescript" | "python" | "java";
+const LANGUAGE_IDS: Record<Lang, number> = { typescript: 74, python: 71, java: 62 };
 
 type ProblemDTO = {
   problemId: string;
@@ -59,7 +59,9 @@ const BattleRoom: React.FC = () => {
   const navigate = useNavigate();
 
   const initialLangParam = (params.get("lang") || "typescript").toLowerCase();
-  const initialLang: Lang = initialLangParam === "python" ? "python" : "typescript";
+  const initialLang: Lang =
+  initialLangParam === "python" ? "python" : initialLangParam === "java" ? "java" : "typescript";
+
 
   const [room, setRoom] = useState<RoomDTO | null>(null);
   const [started, setStarted] = useState<boolean>(false);
@@ -337,6 +339,7 @@ const BattleRoom: React.FC = () => {
               >
                 <option value="typescript">TypeScript</option>
                 <option value="python">Python</option>
+                <option value="java">Java</option>
               </select>
             </div>
 
